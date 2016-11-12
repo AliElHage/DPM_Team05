@@ -124,16 +124,25 @@ public class Navigation {
 				this.turnTo(minAng, false);
 				
 				//turn to face horizontal side of triangle
+				//angle to turn to
+				double ang;
 				if(x==0){
-					this.goForward(x);
+					ang = 0;
 				}
 				else {
-					double ang = Math.atan(y/x);
-					this.turnTo(ang, false);
-				}				
-				this.goForward(x);
+					ang = Math.atan(y/x);
+					
+				}	
+				turnTo(ang, false);
+				
+				//keep going while less than error
+				while (Math.abs(x - odometer.getX()) > CM_ERR) {
+					this.setSpeeds(FAST,FAST);
+				}
 				this.turnAmount(-90);
-				this.goForward(y);
+				while (Math.abs(y - odometer.getY()) > CM_ERR) {
+					this.goForward(y);	
+				}				
 			}else{
 				return;				//exit the method when traveling is interrupted
 			}
