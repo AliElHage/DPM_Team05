@@ -25,6 +25,7 @@ public class Navigation {
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
 	private double desiredX, desiredY;
 	private boolean interrupted, isTraveling;
+	private boolean movingFront, movingRight;
 
 	public Navigation(Odometer odo) {
 		this.odometer = odo;
@@ -104,6 +105,53 @@ public class Navigation {
 		this.setSpeeds(0, 0);
 		this.isTraveling = false;
 	}
+	/*
+	 * TravelTo function that behaves just like TravelTo except it goes along the 2 sides
+	 * of the triangle
+	 */
+	public synchronized void travelToRightAngle(double x, double y) {
+		double minAng;
+		
+		this.isTraveling = true;
+		desiredX = x;
+		desiredY = y;
+		
+		while (Math.abs(x - odometer.getX()) > CM_ERR || Math.abs(y - odometer.getY()) > CM_ERR) {
+			if(!interrupted){
+				minAng = (Math.atan2(y - odometer.getY(), x - odometer.getX())) * (180.0 / Math.PI);
+				if (minAng < 0)
+					minAng += 360.0;
+				this.turnTo(minAng, false);
+				
+				//turn to face horizontal side of triangle
+				if(x==0){
+					this.goForward(x);
+				}
+				else {
+					double ang = Math.atan(y/x);
+					this.turnTo(ang, false);
+				}				
+				this.goForward(x);
+				this.turnAmount(-90);
+				this.goForward(y);
+			}else{
+				return;				//exit the method when traveling is interrupted
+			}
+		}
+		this.setSpeeds(0, 0);
+		this.isTraveling = false;
+	}
+	/**
+	 * determine whether robot should move to the right or left, front or behind 
+	 * @param xDesired
+	 * @param yDesired
+	 */
+	private void determineDirection(double xDesired, double yDesired){	
+		this.movingFront = false;
+		this.movingRight = false;	
+		if(yDesired > odometer.getX())	this.movingFront = true; 	
+		if(xDesired > odometer.getY())	this.movingRight = true;	
+	}
 	
 	/**
 	 * check if robot has reached the destination that was passed to travelTo() last time 
@@ -172,6 +220,18 @@ public class Navigation {
 		this.isTraveling = false;
 	}
 	
+	public void turnAmount(double amount){
+		if(amount>=0) {
+			leftMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, amount), true);
+			rightMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, amount), true);
+		}
+		if(amount<0){
+			amount = Math.abs(amount);
+			leftMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, amount), true);
+			rightMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, amount), true);
+		}	
+	}
+	
 	/**
 	 *  To resume last traveling
 	 */
@@ -225,9 +285,12 @@ public class Navigation {
 		this.setSpeeds(0, 0);
 	}
 	
+	//methods originally from SquareDriver class in Lab2
+	private static int convertAngle(double radius, double width, double angle) {
+		return convertDistance(radius, Math.PI * width * angle / 360.0);
+	}
 	private static int convertDistance(double radius, double distance) {
 		return (int) ((180.0 * distance) / (Math.PI * radius));
 	}
-	
 
 } 
