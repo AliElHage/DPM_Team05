@@ -135,13 +135,15 @@ public class Navigation {
 				}	
 				turnTo(ang, false);
 				
-				//keep going while less than error
+				//moves forward while less than error
 				while (Math.abs(x - odometer.getX()) > CM_ERR) {
 					this.setSpeeds(FAST,FAST);
 				}
+				//turns to face vertical axis
 				this.turnAmount(-90);
+				//moves forward again
 				while (Math.abs(y - odometer.getY()) > CM_ERR) {
-					this.goForward(y);	
+					this.setSpeeds(FAST,FAST);	
 				}				
 			}else{
 				return;				//exit the method when traveling is interrupted
