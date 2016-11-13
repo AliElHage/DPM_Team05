@@ -19,8 +19,9 @@ public class Main extends Thread{
 	private static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 	public static final double WHEEL_RADIUS = 2.1;
 	public static final double WIDTH = 15.2;
-	private static final Port usPort = LocalEV3.get().getPort("S1");		
-	private static final Port colorPort = LocalEV3.get().getPort("S2");
+	private static final Port usPort1 = LocalEV3.get().getPort("S2");	
+	private static final Port usPort2 = LocalEV3.get().getPort("S1");
+	private static final Port colorPort = LocalEV3.get().getPort("S3");
 	
 	public static void main(String[] args) {
 		/**
@@ -31,9 +32,12 @@ public class Main extends Thread{
 		/**
 		 * US declarations
 		 */
-		SensorModes usSensor = new EV3UltrasonicSensor(usPort);
-		SampleProvider usValue = usSensor.getMode("Distance");
-		float[] usData = new float[usValue.sampleSize()];				
+		SensorModes usSensor1 = new EV3UltrasonicSensor(usPort1);
+		SampleProvider usValue1 = usSensor1.getMode("Distance");
+		SensorModes usSensor2 = new EV3UltrasonicSensor(usPort2);
+		SampleProvider usValue2 = usSensor2.getMode("Distance");
+		float[] usData1 = new float[usValue1.sampleSize()];
+		float[] usData2 = new float[usValue1.sampleSize()];
 		
 		/**
 		 * Color declarations
@@ -47,7 +51,8 @@ public class Main extends Thread{
 		 */
 		Odometer odo = new Odometer(leftMotor, rightMotor, 30, true);
 		Navigation nav = new Navigation(odo);
-		Localization loc = new Localization(odo, usValue, usData, colorSensor, colorData, leftMotor, rightMotor, nav);
+		Localization loc = new Localization(odo, usValue1, usValue2, usData1, usData2, 
+				colorValue, colorData, leftMotor, rightMotor, nav);
 		
 		/**
 		 * Localize robot
