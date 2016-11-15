@@ -17,7 +17,7 @@ public class Localization {
 	 */
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
 	private int FORWARD_SPEED = 100;
-	private int ROTATION_SPEED = 50;
+	private int ROTATION_SPEED = 75;
 	private Odometer odo;
 	private Navigation navigator;
 	
@@ -281,7 +281,7 @@ public class Localization {
 		 * with a negative, so the formula was changed to exclude the negative
 		 */
 		x = (-distance)*Math.cos(Math.toRadians(angleY));
-		y = (-distance)*Math.cos(Math.toRadians(angleX));
+		y = (distance)*Math.cos(Math.toRadians(angleX));
 		
 		/**
 		 * turns to theta=0 to make it easier to set odometer position
