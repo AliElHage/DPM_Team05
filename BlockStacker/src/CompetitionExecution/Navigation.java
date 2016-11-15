@@ -261,8 +261,9 @@ public class Navigation {
 	public void goForward(double distance) {
 		this.leftMotor.setSpeed(FAST);
 		this.rightMotor.setSpeed(FAST);
-		this.leftMotor.rotate(convertDistance(odometer.getLeftRadius(), distance), true);
-		this.rightMotor.rotate(convertDistance(odometer.getRightRadius(), distance), false);
+		
+		this.leftMotor.rotate(convertDistance(Main.WHEEL_RADIUS, distance), true);
+		this.rightMotor.rotate(convertDistance(Main.WHEEL_RADIUS, distance), false);
 	}
 	
 	/**
