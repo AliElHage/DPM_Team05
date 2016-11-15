@@ -16,8 +16,8 @@ public class Localization {
 	 * general variables used for both ultrasonic and light sensor parts of localization
 	 */
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
-	private int FORWARD_SPEED = 100;
-	private int ROTATION_SPEED = 75;
+	private int FORWARD_SPEED = 200; //100
+	private int ROTATION_SPEED = 150; //75
 	private Odometer odo;
 	private Navigation navigator;
 	
