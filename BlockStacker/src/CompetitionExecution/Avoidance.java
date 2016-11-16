@@ -35,7 +35,7 @@ public class Avoidance extends Thread{
 		while(rightUS.readUSDistance() > SENSOR_WALL){  
 			nav.rotateLeft();			//keep rotating to left till robot position parallel to the wall and get US reading 'SENSOR_WALL'
 		}
-		nav.stopMoving();
+		nav.stop();
 		thetaTurned = nav.odometer.getAng() - startTheta; // record how many degree robot has rotate to get parallel position to the wall
 		
 		nav.turn(thetaTurned);   		//restore robot original position for moving forward after steering clear of obstacle
@@ -43,7 +43,7 @@ public class Avoidance extends Thread{
 		while(Math.abs(rightUS.readUSDistance()-SENSOR_WALL)< ERR_DIS){
 			nav.moveForward();  	//robot keeps moving forward till it cannot see wall on the right (change in US reading greater than 3)			
 		}
-		nav.stopMoving();
+		nav.stop();
 		
 		
 		handle = true;

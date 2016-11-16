@@ -1,7 +1,5 @@
 package CompetitionExecution;
 
-import com.sun.swing.internal.plaf.synth.resources.synth;
-
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
 /**
@@ -17,25 +15,19 @@ public class Searching extends Thread{
 	final static int UPDATING_ANGLE=3, ACCELERATION=4000, SPEED_NORMAL=200;
 	final static int SAFE_DISTANCE = 10, VISION_RANGE=90, VISION_ANGLE_START=340;
 	private Navigation nav;
-	private volatile boolean interrupted;
 	
 	public Searching(Navigation nav){
 		this.nav = nav;
-		this.interrupted = false;   	//
 	}
 	
 	public void run(){
 		nav.turnTo(0, true);			//ensure each searching will start at position 0
-		while(!interrupted){
+		while(true){
 			nav.turn(-VISION_RANGE);
 			nav.turnTo(90, true);   			 // robot rotates to 90 along the positive y axis 
 			nav.goForward(SAFE_DISTANCE);		//move a bit forward to a new location and start searching again
 			nav.turnTo(VISION_ANGLE_START,true);
 		}
 
-	}
-	
-	public synchronized void stopThread(){
-		this.interrupted = true;
 	}
 }
