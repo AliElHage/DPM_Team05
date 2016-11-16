@@ -18,7 +18,7 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
  * @author courtneywright
  *
  */
-public class Navigation {
+public class Navigation extends Thread{
 	final static int FAST = 130, SLOW = 60, ACCELERATION = 4000;    //SLOW =60  FAST =100
 	final static double DEG_ERR = 1.0, CM_ERR = 1.0;
 	public Odometer odometer;
@@ -40,6 +40,28 @@ public class Navigation {
 		this.leftMotor.setAcceleration(ACCELERATION);
 		this.rightMotor.setAcceleration(ACCELERATION);
 	}
+	
+	
+	/**
+	 * the thread will run to drive the robot to the destination set before
+	 */
+	public void run(){
+		while(!checkDone()){
+			this.travelToRightAngle(desiredX, desiredY);
+		}
+	}
+	
+	
+	/**
+	 * To initialized the desiredX and desiredY so robot can run the thread and drive to the destination
+	 * @param desiredX
+	 * @param desiredY
+	 */
+	public synchronized void setDest(double desiredX, double desiredY){
+		this.desiredX = desiredX;
+		this.desiredY = desiredY;
+	}
+	
 
 	/*
 	 * Functions to set the motor speeds jointly
@@ -105,6 +127,7 @@ public class Navigation {
 		this.setSpeeds(0, 0);
 		this.isTraveling = false;
 	}
+	
 	/*
 	 * TravelTo function that behaves just like TravelTo except it goes along the 2 sides
 	 * of the triangle
@@ -152,6 +175,7 @@ public class Navigation {
 		this.setSpeeds(0, 0);
 		this.isTraveling = false;
 	}
+	
 	/**
 	 * determine whether robot should move to the right or left, front or behind 
 	 * @param xDesired
@@ -226,7 +250,7 @@ public class Navigation {
 	 *  To interrupt the current traveling 
 	 */
 	public void interruptTraveling(){
-		this.stop();
+		this.stopMoving();
 		this.interrupted = true;
 		this.isTraveling = false;
 	}
@@ -289,10 +313,10 @@ public class Navigation {
 	public void revert(){
 		this.setSpeeds(-FAST, -FAST);
 		try { Thread.sleep(1500); } catch(Exception e){}
-		this.stop();
+		this.stopMoving();
 	}
 	
-	public void stop(){
+	public void stopMoving(){
 		this.setSpeeds(0, 0);
 	}
 	
