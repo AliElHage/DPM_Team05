@@ -51,7 +51,6 @@ public class Main extends Thread{
 		 */
 		Odometer odo = new Odometer(leftMotor, rightMotor, 30, true);
 		Navigation nav = new Navigation(odo);
-		LCDInfo lcd = new LCDInfo(odo);
 		Localization loc = new Localization(odo, usValue1, usValue2, usData1, usData2, 
 				colorValue, colorData, leftMotor, rightMotor, nav);
 		
@@ -60,12 +59,6 @@ public class Main extends Thread{
 		 */
 		loc.localize();
 		loc.zeroRobot();
-		
-		nav.travelByPath(20, 20);
-		nav.travelByPath(0, 40);
-		nav.travelByPath(60, 40);
-		
-		
 		
 		
 	}
