@@ -57,13 +57,24 @@ public class FieldMap {
 	
 	
 	/**
-	 * helper method to get the grid object by the coordinate of odometer readings
+	 * This method to get the grid object by the coordinate of odometer readings
 	 * @param pointX
 	 * @param pointY
 	 * @return Grid
 	 */
-	private Grid getGrid(double pointX, double pointY){
+	public Grid getGrid(double pointX, double pointY){
 		int[] targetGrid = convertPointToGrid(pointX, pointY);
+		return this.getGrid(targetGrid[0], targetGrid[1]);
+	}
+	
+	/**
+	 * This method to get the grid object by the grid index
+	 * @param gridX
+	 * @param gridY
+	 * @return Grid
+	 */
+	public Grid getGrid(int gridX, int gridY){
+		int[] targetGrid = {gridX, gridY};
 		
 		for(Grid grid: grids){			//iterate through the grids collection and find the target grid
 			if(grid.getGridIndex().equals(targetGrid)){
@@ -74,21 +85,16 @@ public class FieldMap {
 	}
 	
 	/**
-	 * helper method to get the grid object by the grid index
-	 * @param gridX
-	 * @param gridY
-	 * @return Grid
+	 * This method return a collection of grids as zone by passing the lower left and upper right points 
+	 * @param LZx lower left x
+	 * @param LZy lower left y
+	 * @param UZx upper right x
+	 * @param UZy upper right y
+	 * @return
 	 */
-	private Grid getGrid(int gridX, int gridY){
-		int[] targetGrid = {gridX, gridY};
+	/*public ArrayList<Grid> getZone(double LZx, double LZy, double UZx, double UZy){
 		
-		for(Grid grid: grids){			//iterate through the grids collection and find the target grid
-			if(grid.getGridIndex().equals(targetGrid)){
-				return grid;
-			}
-		}
-		return null;
-	}
+	}*/
 	
 	
 	/**
@@ -115,6 +121,8 @@ public class FieldMap {
 		double pointY = GRID_LENGTH/2 + (gridY-1)*GRID_LENGTH; 
 		return new double[] {pointX,pointY};	
 	}
+	
+	/*public static */
 	
 }
 

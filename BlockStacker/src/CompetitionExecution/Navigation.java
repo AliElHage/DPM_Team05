@@ -84,36 +84,36 @@ public class Navigation extends Thread{
 		switch (this.determineDirection(desiredX, desiredY)) {
 		case UP:
 			while(currentGridY!=destGridY){
-				path_t.add(new Grid(currentGridX, ++currentGridY));		// add the grids to the path collection to constitute a path up
+				path_t.add(map.getGrid(currentGridX, ++currentGridY));		// add the grids to the path collection to constitute a path up
 			}
 			break;
 			
 		case DOWN:
 			while(currentGridY!=destGridY){
-				path_t.add(new Grid(currentGridX, --currentGridY));		// add the grid to the path collection to constitute a path down
+				path_t.add(map.getGrid(currentGridX, --currentGridY));		// add the grid to the path collection to constitute a path down
 			}
 			break;
 			
 		case LEFT:
 			while(currentGridX!=destGridX){
-				path_t.add(new Grid(--currentGridX, currentGridY));		// add the grid to the path collection to constitute a path left
+				path_t.add(map.getGrid(--currentGridX, currentGridY));		// add the grid to the path collection to constitute a path left
 			}
 			break;
 			
 		case RIGHT:
 			while(currentGridX!=destGridX){
-				path_t.add(new Grid(++currentGridX, currentGridY));		// add the grid to the path collection to to constitute a path right
+				path_t.add(map.getGrid(++currentGridX, currentGridY));		// add the grid to the path collection to to constitute a path right
 			}
 			break;
 			
 		case UPRIGHT:
 			while(currentGridY!=destGridY && currentGridX!=destGridX){
 				if(destGridY > currentGridY && destGridX > currentGridX){
-					path_t.add(new Grid(++currentGridX, ++currentGridY));	// add the grids to the path collection to constitute a path upright
+					path_t.add(map.getGrid(++currentGridX, ++currentGridY));	// add the grids to the path collection to constitute a path upright
 				}else if(destGridY > currentGridY){
-					path_t.add(new Grid(currentGridX, ++currentGridY));		// add the grids to the path collection to constitute a path up
+					path_t.add(map.getGrid(currentGridX, ++currentGridY));		// add the grids to the path collection to constitute a path up
 				}else{
-					path_t.add(new Grid(++currentGridX, currentGridY));		// add the grids to the path collection to constitute a path right
+					path_t.add(map.getGrid(++currentGridX, currentGridY));		// add the grids to the path collection to constitute a path right
 				}
 			}
 			break;
@@ -121,11 +121,11 @@ public class Navigation extends Thread{
 		case UPLEFT:
 			while(currentGridY!=destGridY && currentGridX!=destGridX){
 				if(destGridY > currentGridY && destGridX < currentGridX){
-					path_t.add(new Grid(--currentGridX, ++currentGridY));	// add the grids to the path collection to constitute a path upleft
+					path_t.add(map.getGrid(--currentGridX, ++currentGridY));	// add the grids to the path collection to constitute a path upleft
 				}else if(destGridY > currentGridY){
-					path_t.add(new Grid(currentGridX, ++currentGridY));		// add the grids to the path collection to constitute a path up
+					path_t.add(map.getGrid(currentGridX, ++currentGridY));		// add the grids to the path collection to constitute a path up
 				}else{
-					path_t.add(new Grid(--currentGridX, currentGridY));		// add the grids to the path collection to constitute a path left
+					path_t.add(map.getGrid(--currentGridX, currentGridY));		// add the grids to the path collection to constitute a path left
 				}
 			}
 			break;
@@ -133,11 +133,11 @@ public class Navigation extends Thread{
 		case DOWNLEFT:
 			while(currentGridY!=destGridY && currentGridX!=destGridX){
 				if(destGridY < currentGridY && destGridX < currentGridX){
-					path_t.add(new Grid(--currentGridX, --currentGridY));	// add the grids to the path collection to constitute a path downleft
+					path_t.add(map.getGrid(--currentGridX, --currentGridY));	// add the grids to the path collection to constitute a path downleft
 				}else if(destGridY < currentGridY){
-					path_t.add(new Grid(currentGridX, --currentGridY));		// add the grids to the path collection to constitute a path down
+					path_t.add(map.getGrid(currentGridX, --currentGridY));		// add the grids to the path collection to constitute a path down
 				}else{
-					path_t.add(new Grid(--currentGridX, currentGridY));		// add the grids to the path collection to constitute a path left
+					path_t.add(map.getGrid(--currentGridX, currentGridY));		// add the grids to the path collection to constitute a path left
 				}
 			}
 			break;
@@ -145,11 +145,11 @@ public class Navigation extends Thread{
 		case DOWNRIGHT:
 			while(currentGridY!=destGridY && currentGridX!=destGridX){
 				if(destGridY < currentGridY && destGridX > currentGridX){
-					path_t.add(new Grid(++currentGridX, --currentGridY));	// add the grids to the path collection to constitute a path downright
+					path_t.add(map.getGrid(++currentGridX, --currentGridY));	// add the grids to the path collection to constitute a path downright
 				}else if(destGridY < currentGridY){
-					path_t.add(new Grid(currentGridX, --currentGridY));		// add the grids to the path collection to constitute a path down
+					path_t.add(map.getGrid(currentGridX, --currentGridY));		// add the grids to the path collection to constitute a path down
 				}else{
-					path_t.add(new Grid(++currentGridX, currentGridY));		// add the grids to the path collection to constitute a path right
+					path_t.add(map.getGrid(++currentGridX, currentGridY));		// add the grids to the path collection to constitute a path right
 				}
 			}
 			break;
@@ -358,7 +358,6 @@ public class Navigation extends Thread{
 				this.setSpeeds(-SLOW, SLOW);
 			}
 		}
-
 		if (stop) {
 			this.setSpeeds(0, 0);
 		}
