@@ -23,12 +23,14 @@ public class Main extends Thread{
 	private static final Port usPort1 = LocalEV3.get().getPort("S2");	
 	private static final Port usPort2 = LocalEV3.get().getPort("S1");
 	private static final Port colorPort = LocalEV3.get().getPort("S4");
+	public static int BTN, BSC, CTN, CSC, LRZx, LRZy, URZx, URZy, LGZx, LGZy, UGZx, UGZy;
 	
 	public static void main(String[] args) {
 		/**
 		 * Instantiation for Parameter Interpretation
 		 */
 		ParameterInterpretation parInt = new ParameterInterpretation();
+		parInt.interpret();
 		
 		/**
 		 * US declarations
