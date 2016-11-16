@@ -1,6 +1,5 @@
 package CompetitionExecution;
 
-import lejos.hardware.Button;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3ColorSensor;
@@ -19,10 +18,10 @@ public class Main extends Thread{
 	private static final EV3LargeRegulatedMotor leftMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
 	private static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 	public static final double WHEEL_RADIUS = 2.1;
-	public static final double WIDTH = 19.1;
+	public static final double WIDTH = 15.2;
 	private static final Port usPort1 = LocalEV3.get().getPort("S2");	
 	private static final Port usPort2 = LocalEV3.get().getPort("S1");
-	private static final Port colorPort = LocalEV3.get().getPort("S4");
+	private static final Port colorPort = LocalEV3.get().getPort("S3");
 	
 	public static void main(String[] args) {
 		/**
@@ -60,7 +59,6 @@ public class Main extends Thread{
 		 * Localize robot
 		 */
 		loc.localize();
-<<<<<<< HEAD
 		loc.zeroRobot();
 		
 		nav.travelByPath(20, 20);
@@ -69,11 +67,6 @@ public class Main extends Thread{
 		
 		
 		
-=======
-//		while(Button.waitForAnyPress() != 1){
-			loc.zeroRobot();
-//		}		
->>>>>>> 4b1a5c80a3330dfa92fdbee7a8819ca481a8e65f
 		
 	}
 }

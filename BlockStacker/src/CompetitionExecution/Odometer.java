@@ -1,4 +1,6 @@
 package CompetitionExecution;
+
+
 /*
  * File: Odometer.java
  * Written by: Sean Lawlor
@@ -31,8 +33,16 @@ import lejos.utility.Timer;
 import lejos.utility.TimerListener;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
-public class Odometer implements TimerListener {
+/**
+ * determines robot's position
+ * @author courtneywright
+ *
+ */
+public class Odometer implements TimerListener{
 
+	/**
+	 * Initialize variables
+	 */
 	private Timer timer;
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
 	private final int DEFAULT_TIMEOUT_PERIOD = 20;
@@ -40,23 +50,32 @@ public class Odometer implements TimerListener {
 	private double x, y, theta;
 	private double[] oldDH, dDH;
 	
-	// constructor
+	/**
+	 * set parameters for Odometer object
+	 * @param leftMotor passing of the left motor
+	 * @param rightMotor passing of the right motor
+	 * @param INTERVAL how long to wait before restarting
+	 * @param autostart determines if restarting is endabled
+	 */
 	public Odometer (EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor, int INTERVAL, boolean autostart) {
 		
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
 		
 		// default values, modify for your robot
-		this.rightRadius = Main.WHEEL_RADIUS;
-		this.leftRadius = Main.WHEEL_RADIUS;
-		this.width = Main.WIDTH;
+		this.rightRadius = 2.2;
+		this.leftRadius = 2.2;
+		this.width = 12.85;
 		
 		this.x = 0.0;
 		this.y = 0.0;
-		this.theta = theta;
+		this.theta = 90.0;
 		this.oldDH = new double[2];
 		this.dDH = new double[2];
 
+		/**
+		 * cautionary statement if autostart is set to true but invalid interval is given
+		 */
 		if (autostart) {
 			// if the timeout interval is given as <= 0, default to 20ms timeout 
 			this.timer = new Timer((INTERVAL <= 0) ? INTERVAL : DEFAULT_TIMEOUT_PERIOD, this);
@@ -65,6 +84,9 @@ public class Odometer implements TimerListener {
 			this.timer = null;
 	}
 	
+	/**
+	 * 
+	 */
 	// functions to start/stop the timerlistener
 	public void stop() {
 		if (this.timer != null)
@@ -183,4 +205,14 @@ public class Odometer implements TimerListener {
 		else
 			return d - 360.0;
 	}
+
+	public double getLeftRadius() {
+		return leftRadius;
+	}
+
+	public double getRightRadius() {
+		return rightRadius;
+	}
+	
+	
 }

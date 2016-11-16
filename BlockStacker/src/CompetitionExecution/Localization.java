@@ -16,8 +16,8 @@ public class Localization {
 	 * general variables used for both ultrasonic and light sensor parts of localization
 	 */
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
-	private int FORWARD_SPEED = 200; //100
-	private int ROTATION_SPEED = 150; //75
+	private int FORWARD_SPEED = 100;
+	private int ROTATION_SPEED = 50;
 	private Odometer odo;
 	private Navigation navigator;
 	
@@ -26,7 +26,7 @@ public class Localization {
 	 */
 	private SampleProvider usSensor1, usSensor2;
 	private float[] usData1, usData2;
-	private int threshDist = 20;
+	private int threshDist = 25;
 	
 	/**
 	 * light sensor localization specific variables
@@ -34,7 +34,7 @@ public class Localization {
 	private static SampleProvider colorSensor;
 	private static float[] colorData;	
 	private int extraDist = 4;
-	private double distance = 12.5;
+	private double distance = 11.5;
 	double x, y, angleX, angleY;
 	
 	/**
@@ -99,15 +99,10 @@ public class Localization {
 					Sound.beep();
 					leftMotor.stop();
 					rightMotor.stop();
-					if(odo.getAng() < 270) {
-						angleA = 270 + odo.getAng();
-					} else {
-						angleA = odo.getAng() - 90;
-					}
+					angleA = 270 + odo.getAng();
 					break;
 				}
 			}
-			
 			LCD.drawString("AngleA: " + angleA, 0, 0);
 			LCD.drawString("OdometerA: " + odo.getAng(), 0, 1);
 			
@@ -152,10 +147,7 @@ public class Localization {
 				angleAvg =  45 - (angleA + angleB)/2;
 			}
 			
-			LCD.drawString("Avg: " + angleAvg, 0, 4);
-			LCD.drawString("Avg+B: " + (angleAvg+angleB), 0, 5);
-			
-			odo.setPosition(new double [] {0.0, 0.0, (angleAvg + angleB - 90)}, new boolean []{true, true, true});
+			odo.setPosition(new double [] {0.0, 0.0, angleB + angleAvg - 90}, new boolean []{true, true, true});
 			
 			/**
 			 * turn robot to face along the Y-axis
@@ -205,7 +197,7 @@ public class Localization {
 	 * moves robot to this location to manually set odometer to 0-0-0.
 	 */
 	public void zeroRobot() {
-		LCD.clear();
+
 		/**
 		 * turns robot to 45 degrees, which can happen because the angle is already oriented
 		 */
@@ -216,10 +208,10 @@ public class Localization {
 		 */
 		navigator.goForward(15);
 		
-//		/**
-//		 * turns robot 180 degrees so that it can check lines by turning clockwise
-//		 */
-//		navigator.turnTo(180, true);
+		/**
+		 * turns robot 180 degrees so that it can check lines by turning clockwise
+		 */
+		navigator.turnTo(180, true);
 		
 		/**
 		 * instantiate array that will hold angle at each line and index of each line
@@ -264,11 +256,6 @@ public class Localization {
 		leftMotor.stop();
 		rightMotor.stop();
 		
-		LCD.drawString("First Angle: " + angles[0], 0, 0);
-		LCD.drawString("Second Angle: " + angles[1], 0, 1);
-		LCD.drawString("Third Angle: " + angles[2], 0, 2);
-		LCD.drawString("Fourth Angle: " + angles[3], 0, 3);
-		
 		/**
 		 * formula from the slides, angles are those taken when passing line
 		 */
@@ -280,18 +267,18 @@ public class Localization {
 		 * calculation for x and it was returned as the absolute value of what it should have been when calculated
 		 * with a negative, so the formula was changed to exclude the negative
 		 */
-		x = (-distance)*Math.cos(Math.toRadians(angleY));
-		y = (distance)*Math.cos(Math.toRadians(angleX));
+		x = (distance)*Math.cos(Math.toRadians(angleY));
+		y = (-distance)*Math.cos(Math.toRadians(angleX));
 		
 		/**
 		 * turns to theta=0 to make it easier to set odometer position
 		 */
-//		navigator.turnTo(0, true);
+		navigator.turnTo(0, true);
 		
 		/**
 		 * sets x and y knowing that theta is 0
 		 */
-		odo.setPosition(new double [] {x, y, odo.getAng()}, new boolean []{true, true, true});
+		odo.setPosition(new double [] {x, y, 0.0}, new boolean []{true, true, true});
 		
 		/**
 		 * navigation method to move the robot to its final position based on calculation
@@ -325,7 +312,7 @@ public class Localization {
 	private static boolean lineCrossed(){
 		colorSensor.fetchSample(colorData, 0);
 //		System.out.println("Sensor reading: " + colorData[0]);
-		if(colorData[0] < 0.30){
+		if(colorData[0] < 0.23){
 			return true;
 		}
 		else{

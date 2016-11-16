@@ -39,9 +39,7 @@ public class BlockHunter extends Thread{
 			switch (state) {
 			
 			case SEARCHING:
-				int shortestDis;
-				
-				Searching searching = new Searching(nav, frontUS); 			//create a thread object for searching
+				Searching searching = new Searching(nav); 			//create a thread object for searching
 				searching.start();
 				while(frontUS.readUSDistance() > VISION_RANGE){}	//keep checking the US reading until robot reads something within vision
 				searching.stopThread();
