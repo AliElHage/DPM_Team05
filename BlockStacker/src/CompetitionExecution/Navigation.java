@@ -105,50 +105,54 @@ public class Navigation {
 		this.setSpeeds(0, 0);
 		this.isTraveling = false;
 	}
-	/*
+	/**
 	 * TravelTo function that behaves just like TravelTo except it goes along the 2 sides
 	 * of the triangle
+	 * Relies on the robot knowing its angle theta already (ie. localized)
 	 */
 	public synchronized void travelToRightAngle(double x, double y) {
+		//note: 
 		double minAng;
 		
 		this.isTraveling = true;
 		desiredX = x;
 		desiredY = y;
 		
-		while (Math.abs(x - odometer.getX()) > CM_ERR || Math.abs(y - odometer.getY()) > CM_ERR) {
-			if(!interrupted){
-				minAng = (Math.atan2(y - odometer.getY(), x - odometer.getX())) * (180.0 / Math.PI);
-				if (minAng < 0)
-					minAng += 360.0;
-				this.turnTo(minAng, false);
-				
-				//turn to face horizontal side of triangle
-				//angle to turn to
-				double ang;
-				if(x==0){
-					ang = 0;
-				}
-				else {
-					ang = Math.atan(y/x);
-					
-				}	
-				turnTo(ang, false);
-				
-				//moves forward while less than error
-				while (Math.abs(x - odometer.getX()) > CM_ERR) {
-					this.setSpeeds(FAST,FAST);
-				}
-				//turns to face vertical axis
-				this.turnAmount(-90);
-				//moves forward again
-				while (Math.abs(y - odometer.getY()) > CM_ERR) {
-					this.setSpeeds(FAST,FAST);	
-				}				
-			}else{
-				return;				//exit the method when traveling is interrupted
+		//I don't think we need this
+/*		minAng = (Math.atan2(y - odometer.getY(), x - odometer.getX())) * (180.0 / Math.PI);
+		if (minAng < 0)
+			minAng += 360.0;
+		this.turnTo(minAng, false);		*/
+		
+		
+		double Xangle, Yangle;
+		//HORIZONTAL SIDE
+		if(x<0)
+			Xangle = 180;
+		else
+			Xangle = 0;
+		//Turns to face then travels along x axis
+		while (Math.abs(x - odometer.getX()) > CM_ERR) {
+			if(!interrupted) {
+				this.turnTo(Xangle, false);
+				this.setSpeeds(FAST,FAST);
 			}
+			else return; 	//exit the method when traveling is interrupted
 		}
+		
+		//VERTICAL SIDE
+		if(y < 0) 
+			Yangle = 90;
+		else
+			Yangle = 270;
+		//Turns to face then travels along y axis
+		while (Math.abs(y - odometer.getY()) > CM_ERR) {
+			if(!interrupted) {
+				this.turnTo(Yangle, false);
+				this.setSpeeds(FAST,FAST);
+			}
+			else return; 	//exit the method when traveling is interrupted
+		}							
 		this.setSpeeds(0, 0);
 		this.isTraveling = false;
 	}
