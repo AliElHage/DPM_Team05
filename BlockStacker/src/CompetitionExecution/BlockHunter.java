@@ -1,5 +1,7 @@
 package CompetitionExecution;
 
+import java.util.ArrayList;
+
 import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
@@ -7,22 +9,22 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 public class BlockHunter extends Thread{
 	
 	final static int UPDATING_ANGLE=3, ACCELERATION=4000, SPEED_NORMAL=200;
-	final static double TARGET_DISTANCE=6.4, VISION_RANGE=30, BOARD_EDGE=62, SAFE_DISTANCE=18.0, SAFE_ANGLE=45.0;
-	private Odometer odo;
+	final static double TARGET_DISTANCE=6.4, OBJECT_DIS=25, BOARD_EDGE=62;
 	private Navigation nav;
 	private LightPoller lightSensor;
 	private USPoller frontUS, leftUS, rightUS;
 	private EV3LargeRegulatedMotor hookMotorL, hookMotorR;
 	private boolean foamCaptured;
+	private ArrayList<double[]> destinations;				//store the target coordinates after sweeping search
 	
-	public BlockHunter(Odometer odometer, Navigation nav, USPoller frontUS, USPoller leftUS, USPoller rightUS, LightPoller lightSensor, EV3LargeRegulatedMotor hookMotorL, EV3LargeRegulatedMotor hookMotorR){
-		this.odo = odometer;
+	public BlockHunter(Navigation nav, USPoller frontUS, USPoller leftUS, USPoller rightUS, LightPoller lightSensor, EV3LargeRegulatedMotor hookMotorL, EV3LargeRegulatedMotor hookMotorR){
 		this.nav = nav;
 		this.frontUS = frontUS;
 		this.lightSensor = lightSensor;
 		this.hookMotorL = hookMotorL;
 		this.hookMotorR = hookMotorR;
 		this.foamCaptured = false;
+		this.destinations = new ArrayList<>();
 		this.hookMotorL.setAcceleration(ACCELERATION);
 		this.hookMotorR.setAcceleration(ACCELERATION);
 		this.hookMotorL.setSpeed(SPEED_NORMAL);
@@ -39,48 +41,62 @@ public class BlockHunter extends Thread{
 			switch (state) {
 			
 			case SEARCHING:
-				int shortestDis;
-				
-				Searching searching = new Searching(nav, frontUS); 			//create a thread object for searching
+				nav.rotateLeft();			//set robot keeping rotating to left
+				Searching searching = new Searching(nav, frontUS); 		//create a thread object for searching
 				searching.start();
-				while(frontUS.readUSDistance() > VISION_RANGE){}	//keep checking the US reading until robot reads something within vision
-				searching.stopThread();
-				this.approachTo();					//approach to the object to be ready for color check
 				
-				if(lightSensor.colorCheck()){
+				destinations = searching.trackingTargets();
+				nav.turnToDest(destinations.get(0)[0], destinations.get(0)[1]);  // turn to the first target detected
+				this.approachTo(); // approach to the object to be ready for color check
+				
+				if (lightSensor.colorCheck()) {
+					// if target is a styrofoam, then grasp it
 					Sound.beep();
-					captureFoam();
-					nav.setDest(BOARD_EDGE, BOARD_EDGE); 	// initialize the dest of robot
-					nav.start();
+					captureFoam(); // ********************************fix later***************************************
+					nav.setDest(BOARD_EDGE, BOARD_EDGE); // initialize the dest************************************fix later 
+					destinations.remove(0);	   //remove the first target from the collection after detection									
 					state = State.TRAVELING;
-				}else{
+				} else {
+					//// if target is a wooden block, then mark it on the map and travel to next target
+					nav.map.markBlocked(destinations.get(0)[0], destinations.get(0)[1]);
 					Sound.twoBeeps();
+					destinations.remove(0);	   //remove the first target from the collection after detection									
 					state = State.AVOIDING;
 				}
 				break;
 			
-			case TRAVELING:
-				if(!foamCaptured){			
+			case TRAVELING:	
+				if(destinations.isEmpty()){
 					state = State.SEARCHING;
-				}else{								// if robot has captured the foam 
-					if(checkObject()){				//when detecting something in the front
-						nav.interruptTraveling();	//interrupt the current traveling
-						approachTo();				// approach to it 
+					break;
+				}
+				nav.setDest(destinations.get(0)[0], destinations.get(0)[1]);
+				(new Thread(nav)).start();			//create a thread to run travelTo in nav
+				if(checkObject()){					//when robot encounter an object 
+					nav.interruptTraveling();				
+					Sound.twoBeeps();
+					approachTo();
+					this.approachTo(); // approach to the object to be ready for color check
+					
+					if (lightSensor.colorCheck()) {
+						// if target is a styrofoam, then grasp it
+						Sound.beep();
+						captureFoam(); // ********************************fix later***************************************
+						nav.setDest(BOARD_EDGE, BOARD_EDGE); // initialize the dest************************************fix later 
+						destinations.remove(0);	   //remove the first target from the collection after detection									
+						state = State.TRAVELING;
+					}else {
+						//// if target is a wooden block, then mark it on the map and travel to next target
+						nav.map.markBlocked(destinations.get(0)[0], destinations.get(0)[1]);
 						Sound.twoBeeps();
-						state = State.AVOIDING;		//set to avoiding mode
-					}else if(!nav.checkDone()){
-						nav.resumeTraveling(); 
-					}else{
-						// when the robot has carry the foam to the goal
-						nav.turn(-180);   //put the foam to the desired grid
-						Sound.systemSound(true, 3);
-						return;
-					}
+						destinations.remove(0);	   //remove the first target from the collection after detection									
+						state = State.AVOIDING;
+						}
 				}
 				break;
 			
 			case AVOIDING:
-				if (nav.isTraveling()){
+				/*if (nav.isTraveling()){
 					Avoidance avoidance = new Avoidance(nav, leftUS, rightUS);
 					avoidance.start();	
 					try {
@@ -89,7 +105,7 @@ public class BlockHunter extends Thread{
 						e.printStackTrace();
 					}		// avoidance joins the main thread and main thread continue after avoidance finish
 					state = State.TRAVELING;
-				}else{
+				}else{*/
 					Avoidance avoidance = new Avoidance(nav, leftUS, rightUS);
 					avoidance.start();		// when robot is searching and meets block, simply avoid it
 					try {
@@ -97,8 +113,8 @@ public class BlockHunter extends Thread{
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-					state = State.SEARCHING;
-				}
+					state = State.TRAVELING;
+				//}
 				break;
 
 			default:
@@ -131,7 +147,7 @@ public class BlockHunter extends Thread{
 	 * @return
 	 */
 	private boolean checkObject(){
-		if(frontUS.readUSDistance() < VISION_RANGE){
+		if(frontUS.readUSDistance() < TARGET_DISTANCE){
 			return true;
 		}else{
 			return false;
@@ -139,7 +155,6 @@ public class BlockHunter extends Thread{
 	}
 	
 	
-
 	public boolean obstacleTesting(){
 		if(frontUS.readUSDistance() < TARGET_DISTANCE){
 			System.out.println("Object Detected");
