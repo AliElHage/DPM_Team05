@@ -1,6 +1,8 @@
 package CompetitionExecution;
 
 
+import java.util.ArrayList;
+
 /*
  * File: Navigation.java
  * Written by: Sean Lawlor
@@ -18,20 +20,22 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
  * @author courtneywright
  *
  */
-public class Navigation {
+public class Navigation extends Thread{
 	final static int FAST = 200, SLOW = 150, ACCELERATION = 4000, TURN_SPEED = 150;    //SLOW =60  FAST =175
-	final static double DEG_ERR = 1.0, CM_ERR = 1.0;
 	public Odometer odometer;
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
 	private double desiredX, desiredY;
 	private boolean interrupted, isTraveling;
-	private boolean movingFront, movingRight;
-
+	public FieldMap map; 
+	final static double DEG_ERR = 1.0, CM_ERR = 2.0, DIRECTION_ERR=3.0;
+	enum Direction {LEFT,RIGHT,UP,DOWN,UPLEFT,UPRIGHT,DOWNLEFT,DOWNRIGHT}
+	
+	
 	public Navigation(Odometer odo) {
 		this.odometer = odo;
 		this.interrupted = false;
 		this.isTraveling = false;
-
+		this.map = new FieldMap();
 		EV3LargeRegulatedMotor[] motors = this.odometer.getMotors();
 		this.leftMotor = motors[0];
 		this.rightMotor = motors[1];
@@ -40,6 +44,156 @@ public class Navigation {
 		this.leftMotor.setAcceleration(ACCELERATION);
 		this.rightMotor.setAcceleration(ACCELERATION);
 	}
+	
+	public void run(){
+		while(!checkDone() && !interrupted){	//keep running following codes if travelTo is not done or not interrupted
+			this.travelByPath(desiredX, desiredY);
+			this.travelTo(desiredX, desiredY);
+		}
+	}
+	
+
+	/**
+	 * To initialized the desiredX and desiredY so robot can run the thread and drive to the destination
+	 * @param desiredX
+	 * @param desiredY
+	 */
+	public synchronized void setDest(double desiredX, double desiredY){
+		this.desiredX = desiredX;
+		this.desiredY = desiredY;
+	}
+	
+	/**
+	 * This class helps to find a path comprised of a collection of grids the robot should cover to get to dest. 
+	 * @param desiredX
+	 * @param desiredY
+	 * @return ArrayList<Grid>
+	 */
+	private ArrayList<Grid> getPath(double desiredX, double desiredY){
+		ArrayList<Grid> path = new ArrayList<>();
+		int[] destGrid = FieldMap.convertPointToGrid(desiredX, desiredY);
+		int[] currentGrid = FieldMap.convertPointToGrid(odometer.getX(), odometer.getY());
+		int destGridX = destGrid[0], destGridY = destGrid[1];
+		int currentGridX = currentGrid[0], currentGridY = currentGrid[1];
+		
+		switch (this.determineDirection(desiredX, desiredY)) {
+		case UP:
+			while(currentGridY!=destGridY){
+				path.add(map.getGrid(currentGridX, ++currentGridY));		// add the grids to the path collection to constitute a path up
+			}
+			break;
+			
+		case DOWN:
+			while(currentGridY!=destGridY){
+				path.add(map.getGrid(currentGridX, --currentGridY));		// add the grid to the path collection to constitute a path down
+			}
+			break;
+			
+		case LEFT:
+			while(currentGridX!=destGridX){
+				path.add(map.getGrid(--currentGridX, currentGridY));		// add the grid to the path collection to constitute a path left
+			}
+			break;
+			
+		case RIGHT:
+			while(currentGridX!=destGridX){
+				path.add(map.getGrid(++currentGridX, currentGridY));		// add the grid to the path collection to to constitute a path right
+			}
+			break;
+			
+		case UPRIGHT:
+			while(currentGridY!=destGridY && currentGridX!=destGridX){
+				if(destGridY > currentGridY && destGridX > currentGridX){
+					path.add(map.getGrid(++currentGridX, ++currentGridY));	// add the grids to the path collection to constitute a path upright
+				}else if(destGridY > currentGridY){
+					path.add(map.getGrid(currentGridX, ++currentGridY));		// add the grids to the path collection to constitute a path up
+				}else{
+					path.add(map.getGrid(++currentGridX, currentGridY));		// add the grids to the path collection to constitute a path right
+				}
+			}
+			break;
+		
+		case UPLEFT:
+			while(currentGridY!=destGridY && currentGridX!=destGridX){
+				if(destGridY > currentGridY && destGridX < currentGridX){
+					path.add(map.getGrid(--currentGridX, ++currentGridY));	// add the grids to the path collection to constitute a path upleft
+				}else if(destGridY > currentGridY){
+					path.add(map.getGrid(currentGridX, ++currentGridY));		// add the grids to the path collection to constitute a path up
+				}else{
+					path.add(map.getGrid(--currentGridX, currentGridY));		// add the grids to the path collection to constitute a path left
+				}
+			}
+			break;
+			
+		case DOWNLEFT:
+			while(currentGridY!=destGridY && currentGridX!=destGridX){
+				if(destGridY < currentGridY && destGridX < currentGridX){
+					path.add(map.getGrid(--currentGridX, --currentGridY));	// add the grids to the path collection to constitute a path downleft
+				}else if(destGridY < currentGridY){
+					path.add(map.getGrid(currentGridX, --currentGridY));		// add the grids to the path collection to constitute a path down
+				}else{
+					path.add(map.getGrid(--currentGridX, currentGridY));		// add the grids to the path collection to constitute a path left
+				}
+			}
+			break;
+		
+		case DOWNRIGHT:
+			while(currentGridY!=destGridY && currentGridX!=destGridX){
+				if(destGridY < currentGridY && destGridX > currentGridX){
+					path.add(map.getGrid(++currentGridX, --currentGridY));	// add the grids to the path collection to constitute a path downright
+				}else if(destGridY < currentGridY){
+					path.add(map.getGrid(currentGridX, --currentGridY));		// add the grids to the path collection to constitute a path down
+				}else{
+					path.add(map.getGrid(++currentGridX, currentGridY));		// add the grids to the path collection to constitute a path right
+				}
+			}
+			break;
+			
+		default:
+			break;
+		}
+		
+		return path;			// return the constituted path	
+	}
+	
+	
+	/**
+	 * determine whether robot should move to the right or left, front or back
+	 * @param desiredX
+	 * @param desiredY
+	 * @return Direction
+	 */
+	private Direction determineDirection(double desiredX, double desiredY){	
+		//robot should keep horizontal position
+		if(Math.abs(desiredX - odometer.getX())<DIRECTION_ERR){	
+			if(desiredY > odometer.getY()){		//robot should move to top
+				return Direction.UP;
+			}else{
+				return Direction.DOWN;
+			}
+			
+		//robot should move to right
+		}else if(desiredX > odometer.getX()){	
+			if(Math.abs(desiredY - odometer.getY())<DIRECTION_ERR){		//robot should keep vertical position	
+				return Direction.RIGHT;
+			}else if(desiredY > odometer.getY()){ 	//robot should move to topright
+				return Direction.UPRIGHT;
+			}else{	//robot should move to downright
+				return Direction.DOWNRIGHT;
+			}
+			
+		// //robot should move to left
+		}else{
+			if(Math.abs(desiredY - odometer.getY())<DIRECTION_ERR){		//robot should keep vertical position	
+				return Direction.LEFT;
+			}else if(desiredY > odometer.getY()){ 	//robot should move to topleft
+				return Direction.UPLEFT;
+			}else{	//robot should move to downleft
+				return Direction.DOWNLEFT;
+			} 
+		}
+	}
+	
 
 	/*
 	 * Functions to set the motor speeds jointly
@@ -80,11 +234,45 @@ public class Navigation {
 		this.rightMotor.flt(true);
 	}
 
+	/**
+	 * Drive robot to the destination via the calculated path of grids
+	 * @param x
+	 * @param y
+	 */
+	public void travelByPath(double x, double y){
+		ArrayList<Grid> travelPath = this.getPath(x, y);
+		for(Grid grid: travelPath){
+			double[] dest = FieldMap.convertGridToPoint(grid.getGridIndex()[0],grid.getGridIndex()[1]);
+			this.travelTo(dest[0],dest[1]);
+		}
+	}
 	/*
 	 * TravelTo function which takes as arguments the x and y position in cm Will travel to designated position, while
 	 * constantly updating it's heading
 	 */
 	public synchronized void travelTo(double x, double y) {
+		double distance;
+		
+		this.isTraveling = true;
+		desiredX = x;
+		desiredY = y;
+		
+		this.turnToDest(x, y);
+		
+		// calculate distance to travel with given coordinates
+		distance = Math.sqrt(Math.pow(Math.abs(x - odometer.getX()), 2) + Math.pow(Math.abs(y - odometer.getY()), 2));   
+		
+		this.goForward(distance);  // travel straight the needed distance
+		this.setSpeeds(0, 0);
+		this.isTraveling = false;
+	}
+	/*	*********************************
+	 * 	The following  is previous TravelTo() written by TA, this method is theoretically more accurate than our TravelTo() above, 
+	 * 	but it's problematic as well. Since it contains a while loop keeping checking the error, sometimes the robot can run in 
+	 * crash keeping driving without stop. 
+	 * 
+	 * 	*********************************
+	 * 	public synchronized void travelTo(double x, double y) {
 		double minAng;
 		
 		this.isTraveling = true;
@@ -105,14 +293,33 @@ public class Navigation {
 		this.setSpeeds(0, 0);
 		this.isTraveling = false;
 	}
+	 */
+	
+	
+	
+	
+	/**
+	 * Turn robot to face to the destination 
+	 * @param x 
+	 * @param y
+	 */
+	public synchronized void turnToDest(double x, double y){
+		double minAng = (Math.atan2(y - odometer.getY(), x - odometer.getX())) * (180.0 / Math.PI);
+		if (minAng < 0)
+			minAng += 360.0;
+		this.turnTo(minAng, true);
+	}
+	
+	
+	
 	/**
 	 * TravelTo function that behaves just like TravelTo except it goes along the 2 sides
 	 * of the triangle
 	 * Relies on the robot knowing its angle theta already (ie. localized)
 	 */
 	public synchronized void travelToRightAngle(double x, double y) {
-		//note: 
-		double minAng;
+		//note: we may not need minAng
+		//double minAng;
 		
 		this.isTraveling = true;
 		desiredX = x;
@@ -156,17 +363,7 @@ public class Navigation {
 		this.setSpeeds(0, 0);
 		this.isTraveling = false;
 	}
-	/**
-	 * determine whether robot should move to the right or left, front or behind 
-	 * @param xDesired
-	 * @param yDesired
-	 */
-	private void determineDirection(double xDesired, double yDesired){	
-		this.movingFront = false;
-		this.movingRight = false;	
-		if(yDesired > odometer.getX())	this.movingFront = true; 	
-		if(xDesired > odometer.getY())	this.movingRight = true;	
-	}
+
 	
 	/**
 	 * check if robot has reached the destination that was passed to travelTo() last time 
@@ -230,7 +427,7 @@ public class Navigation {
 	 *  To interrupt the current traveling 
 	 */
 	public void interruptTraveling(){
-		this.stop();
+		this.stopMoving();
 		this.interrupted = true;
 		this.isTraveling = false;
 	}
@@ -294,10 +491,10 @@ public class Navigation {
 	public void revert(){
 		this.setSpeeds(-FAST, -FAST);
 		try { Thread.sleep(1500); } catch(Exception e){}
-		this.stop();
+		this.stopMoving();
 	}
 	
-	public void stop(){
+	public void stopMoving(){
 		this.setSpeeds(0, 0);
 	}
 	
