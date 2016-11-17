@@ -15,12 +15,12 @@ public class FieldMap {
 	
 	final static double GRID_LENGTH=30.48;
 
-	public static List<Grid> grids = new ArrayList<>(); 
+	public static List<Grid> fieldMap = new ArrayList<>(); 
 	
 	public FieldMap(){
 		for(int i=0; i<10; i++){
 			for(int j=0; j<10; j++){
-				grids.add(new Grid(i,j));		// put 10*10 grids into the collection of grids
+				fieldMap.add(new Grid(i,j));		// put 10*10 grids into the collection of grids
 			}
 		}
 	}
@@ -42,7 +42,7 @@ public class FieldMap {
 	 * @return
 	 */
 	public boolean checkBlocked(double pointX, double pointY){
-		return this.getGrid(pointX, pointY).equals(Grid.Status.BLOCKED);
+		return this.getGrid(pointX, pointY).getStatus().equals(Grid.Status.BLOCKED);
 	}
 	
 	/**
@@ -74,10 +74,9 @@ public class FieldMap {
 	 * @return Grid
 	 */
 	public Grid getGrid(int gridX, int gridY){
-		int[] targetGrid = {gridX, gridY};
 		
-		for(Grid grid: grids){			//iterate through the grids collection and find the target grid
-			if(grid.getGridIndex().equals(targetGrid)){
+		for(Grid grid: fieldMap){			//iterate through the grids collection and find the target grid
+			if(grid.equals(gridX, gridY)){
 				return grid;
 			}
 		}
@@ -154,6 +153,23 @@ class Grid {
 	}
 	
 	
-	
-	
+	/**
+	 * to compare this grid with reference grid by passing index of reference grid
+	 * @param targetX
+	 * @param targetY
+	 * @return true if equal
+	 */
+	public boolean equals(int targetX, int targetY){
+		if(gridIndex[0] == targetX &&  gridIndex[1] == targetY){
+			return true;
+		}else{
+			return false;
+		}
+	}
+					
+			
 }
+	
+	
+	
+	
