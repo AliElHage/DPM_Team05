@@ -20,7 +20,6 @@ public class Avoidance extends Thread{
 	private boolean handle;
 
 	public Avoidance(Navigation nav, USPoller leftUS, USPoller rightUS) {
-		//Default Constructor
 		this.leftUS = leftUS;
 		this.rightUS = rightUS;
 		this.nav = nav;
@@ -32,10 +31,11 @@ public class Avoidance extends Thread{
 		double startTheta, thetaTurned;
 		
 		startTheta = nav.odometer.getAng();
-		while(rightUS.readUSDistance() > SENSOR_WALL){  
-			nav.rotateLeft();			//keep rotating to left till robot position parallel to the wall and get US reading 'SENSOR_WALL'
-		}
-		nav.stop();
+		
+		nav.rotateLeft(); 	//keep rotating to left till robot position parallel to the wall and get US reading 'SENSOR_WALL'
+		while(rightUS.readUSDistance() > SENSOR_WALL){} 
+		
+		nav.stopMoving();			
 		thetaTurned = nav.odometer.getAng() - startTheta; // record how many degree robot has rotate to get parallel position to the wall
 		
 		nav.turn(thetaTurned);   		//restore robot original position for moving forward after steering clear of obstacle
@@ -43,7 +43,7 @@ public class Avoidance extends Thread{
 		while(Math.abs(rightUS.readUSDistance()-SENSOR_WALL)< ERR_DIS){
 			nav.moveForward();  	//robot keeps moving forward till it cannot see wall on the right (change in US reading greater than 3)			
 		}
-		nav.stop();
+		nav.stopMoving();
 		
 		
 		handle = true;
