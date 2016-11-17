@@ -70,8 +70,6 @@ public class Main extends Thread{
 				colorValue, colorData, leftMotor, rightMotor, nav);
 		
 		
-		
-		
 		Searching searching = new Searching(nav, frontUS);
 		
 		ClawHandler claw = new ClawHandler(clawMotor, pulleyMotor);
@@ -83,14 +81,12 @@ public class Main extends Thread{
 		lcd.initLCD();
 		loc.localize();
 		loc.zeroRobot();
-		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});
-		/*nav.travelTo(0, 30.48);
 		
 		
 		
-		
-		//test navigation 
-		nav.travelTo(20, 30.48);
+		//test navigation
+		/*odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});  // reset odometer if skipping localization
+		nav.travelTo(0, 30.48);
 		nav.travelTo(20, 40);
 		nav.travelTo(20, 60);
 		nav.travelTo(0, 60);
