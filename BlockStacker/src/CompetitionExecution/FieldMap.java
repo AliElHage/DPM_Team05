@@ -52,7 +52,7 @@ public class FieldMap {
 	 * @return
 	 */
 	public boolean checkBlocked(int gridX, int gridY){
-		return this.getGrid(gridX, gridY).equals(Grid.Status.BLOCKED);
+		return this.getGrid(gridX, gridY).getStatus().equals(Grid.Status.BLOCKED);
 	}
 	
 	
