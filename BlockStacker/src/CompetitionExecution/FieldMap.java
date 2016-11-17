@@ -57,29 +57,23 @@ public class FieldMap {
 	
 	
 	/**
-	 * helper method to get the grid object by the coordinate of odometer readings
+	 * This method to get the grid object by the coordinate of odometer readings
 	 * @param pointX
 	 * @param pointY
 	 * @return Grid
 	 */
-	private Grid getGrid(double pointX, double pointY){
+	public Grid getGrid(double pointX, double pointY){
 		int[] targetGrid = convertPointToGrid(pointX, pointY);
-		
-		for(Grid grid: grids){			//iterate through the grids collection and find the target grid
-			if(grid.getGridIndex().equals(targetGrid)){
-				return grid;
-			}
-		}
-		return null;
+		return this.getGrid(targetGrid[0], targetGrid[1]);
 	}
 	
 	/**
-	 * helper method to get the grid object by the grid index
+	 * This method to get the grid object by the grid index
 	 * @param gridX
 	 * @param gridY
 	 * @return Grid
 	 */
-	private Grid getGrid(int gridX, int gridY){
+	public Grid getGrid(int gridX, int gridY){
 		int[] targetGrid = {gridX, gridY};
 		
 		for(Grid grid: grids){			//iterate through the grids collection and find the target grid
@@ -90,6 +84,18 @@ public class FieldMap {
 		return null;
 	}
 	
+	/**
+	 * This method return a collection of grids as zone by passing the lower left and upper right points 
+	 * @param LZx lower left x
+	 * @param LZy lower left y
+	 * @param UZx upper right x
+	 * @param UZy upper right y
+	 * @return
+	 */
+	/*public ArrayList<Grid> getZone(double LZx, double LZy, double UZx, double UZy){
+		
+	}*/
+	
 	
 	/**
 	 * This method will convert the coordinates in odometer reading to the grid index in the fieldMap.
@@ -98,8 +104,8 @@ public class FieldMap {
 	 * @return int[] 
 	 */
 	public static int[] convertPointToGrid(double pointX, double pointY){
-		int gridX = (int)(pointX%GRID_LENGTH);
-		int gridY = (int)(pointY%GRID_LENGTH);
+		int gridX = (int)(pointX/GRID_LENGTH);
+		int gridY = (int)(pointY/GRID_LENGTH);
 		return new int[] {gridX, gridY};
 	}
 	
@@ -115,6 +121,8 @@ public class FieldMap {
 		double pointY = GRID_LENGTH/2 + (gridY-1)*GRID_LENGTH; 
 		return new double[] {pointX,pointY};	
 	}
+	
+	/*public static */
 	
 }
 
