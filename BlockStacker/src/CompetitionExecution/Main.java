@@ -30,7 +30,7 @@ public class Main extends Thread{
 		 * Instantiation for Parameter Interpretation
 		 */
 		ParameterInterpretation parInt = new ParameterInterpretation();
-		parInt.interpret();
+		//parInt.interpret();
 		
 		/**
 		 * US declarations
@@ -54,16 +54,22 @@ public class Main extends Thread{
 		 */
 		Odometer odo = new Odometer(leftMotor, rightMotor, 30, true);
 		Navigation nav = new Navigation(odo);
+		LCDInfo lcd = new LCDInfo(odo);
 		Localization loc = new Localization(odo, usValue1, usValue2, usData1, usData2, 
 				colorValue, colorData, leftMotor, rightMotor, nav);
 		
 		/**
 		 * Localize robot
 		 */
-		loc.localize();
-//		while(Button.waitForAnyPress() != 1){
-			loc.zeroRobot();
-//		}		
+		lcd.initLCD();
+	//	loc.localize();
+	//	loc.zeroRobot();
+		nav.travelTo(0, 30.48);
+/*		nav.travelByPath(0, 30.48);
+		nav.travelByPath(30.48, 30.48);
+		nav.travelByPath(30.48, 60.96);*/
+			
+			
 		
 	}
 }
