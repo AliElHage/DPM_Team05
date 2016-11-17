@@ -13,8 +13,7 @@ public class Avoidance extends Thread{
 	
 	private static final int ERR_DIS = 3;
 	private static final int  ROTATE_SPEED = 120, ACCELERATION = 2000, MOTOR_STRAIGHT=150, MOTOR_HIGH = 300, MOTOR_LOW = 0;
-	private static final int SENSOR_WALL = 12;	 //the measured value of US distance from sensor to wall when robot rotate to position parallel to the wall 	
-	private static final int CERTAIN_DIS = 5;  // the measured distance for robot to go forward to see the wall again 
+	private static final int SENSOR_WALL = 12;	 //the measured value of US distance from sensor to wall when robot rotate to position parallel to the wall 	 
 	private USPoller leftUS, rightUS;
 	private Navigation nav;
 	private boolean handle;
@@ -28,23 +27,15 @@ public class Avoidance extends Thread{
 	
 
 	public void run() {
-		double startTheta, thetaTurned;
-		
-		startTheta = nav.odometer.getAng();
 		
 		nav.rotateLeft(); 	//keep rotating to left till robot position parallel to the wall and get US reading 'SENSOR_WALL'
 		while(rightUS.readUSDistance() > SENSOR_WALL){} 
-		
 		nav.stopMoving();			
-		thetaTurned = nav.odometer.getAng() - startTheta; // record how many degree robot has rotate to get parallel position to the wall
 		
-		nav.turn(thetaTurned);   		//restore robot original position for moving forward after steering clear of obstacle
-		nav.goForward(CERTAIN_DIS);      //move forward to see the wall again 
-		while(Math.abs(rightUS.readUSDistance()-SENSOR_WALL)< ERR_DIS){
-			nav.moveForward();  	//robot keeps moving forward till it cannot see wall on the right (change in US reading greater than 3)			
-		}
-		nav.stopMoving();
 		
+		nav.moveForward();   //set robot to move forward until it cannot see the wall 
+		while(rightUS.readUSDistance() > SENSOR_WALL){}
+		nav.stopMoving();  	//robot keeps moving forward till it cannot see wall on the right (change in US reading greater than 3)		
 		
 		handle = true;
 	}
