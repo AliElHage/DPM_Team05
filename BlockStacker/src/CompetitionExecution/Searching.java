@@ -3,6 +3,8 @@ package CompetitionExecution;
 
 import java.util.ArrayList;
 
+import lejos.hardware.Sound;
+
 
 /**
  * This searching class will run as a thread to keeps rotating the robot for updating robot vision, 
@@ -15,13 +17,13 @@ import java.util.ArrayList;
 public class Searching extends Thread{
 	
 	final static int ACCELERATION=4000, SPEED_NORMAL=200;
-	final static int VISION_RANGE=90, VISION_ANGLE_START=340, OBJECT_DIS=25;
-	final static int TARGET_NUM = 3, FILTER_OUT = 15;	
+	final static int VISION_RANGE=90, VISION_ANGLE_START=340, OBJECT_DIS=15;
+	final static int TARGET_NUM = 3, FILTER_OUT = 50;	
 	private Navigation nav;
 	private USPoller frontUS;
 	private int filterControl;
 	ArrayList<double[]> targets; 				//store the results after sweeping search
-	ArrayList<double[]> destions;				//store the target coordinates after sweeping search
+	
 	
 	public Searching(Navigation nav, USPoller frontUS){
 		this.nav = nav;
@@ -31,10 +33,10 @@ public class Searching extends Thread{
 	}
 	
 	public void run(){
-		nav.turnTo(0, true);			//ensure each searching will start at position 0
-		nav.rotateLeft();				//set robot keeping rotating to left
+		
+		nav.rotateLeft();
 		this.trackingTargets();
-		nav.stop();
+		nav.stopMoving();
 			/*nav.turnTo(90, true);   			 // robot rotates to 90 along the positive y axis 
 			nav.goForward(SAFE_DISTANCE);		//move a bit forward to a new location and start searching again
 			nav.turnTo(VISION_ANGLE_START,true);*/
@@ -47,18 +49,19 @@ public class Searching extends Thread{
 	 */
 	public ArrayList<double []> trackingTargets(){
 		double distance;
-		ArrayList<double []> targets = new ArrayList<>();
 		
 		while(targets.size()<TARGET_NUM){			//store 3 target for each sweeping search 
 			distance = frontUS.readUSDistance();	 	
 			
-			//filter for obejct detection 
+			//filter for obeject detection 
 			if (distance < OBJECT_DIS && filterControl < FILTER_OUT) {
 				// when robot first gets cut off value for detection of an object, ignore them at first 
 				filterControl++;
 			} else if (distance < OBJECT_DIS) {
 				// when robot keep getting the cut off value for detection of an object, record the distance and theata for localization of the target
+				System.out.println("     "+distance+"   "+nav.odometer.getAng());
 				targets.add(new double[] {distance, nav.odometer.getAng()});
+				Sound.beep();
 			} else {
 				// when robot reads distance greater than cut off value again, reset filter to detect next target
 				filterControl = 0;
