@@ -152,6 +152,12 @@ class Grid {
 		return gridIndex;
 	}
 	
+	public int getGridX(){
+		return gridIndex[0];
+	}
+	public int getGridY(){
+		return gridIndex[1];
+	}
 	
 	/**
 	 * to compare this grid with reference grid by passing index of reference grid
