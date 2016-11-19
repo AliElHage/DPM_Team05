@@ -76,8 +76,7 @@ public class Main extends Thread{
 		Odometer odo = new Odometer(leftMotor, rightMotor, 30, true);
 		Navigation nav = new Navigation(odo);
 		LCDInfo lcd = new LCDInfo(odo,frontUS);
-		Localization loc = new Localization(odo, usValue1, usValue2, usData1, usData2, 
-				colorValue, colorData, leftMotor, rightMotor, nav);
+		Localization loc = new Localization(odo, usValue1, usValue2, usData1, usData2, colorValue, colorData, leftMotor, rightMotor, nav);
 		
 		
 		Searching searching = new Searching(nav, frontUS, rightUS);
@@ -117,7 +116,6 @@ public class Main extends Thread{
 		nav.travelByPath(new Grid(1,0));
 		Sound.beep();
 		nav.travelByPath(new Grid(0,0));
-		
 		
 		//Case 2: test upRight/DownLeft convention
 		//START ROBOT AT BOTTOM LEFT FACING RIGHT

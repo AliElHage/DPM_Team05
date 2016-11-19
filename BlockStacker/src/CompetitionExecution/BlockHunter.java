@@ -37,6 +37,7 @@ public class BlockHunter extends Thread{
 			switch (state) {
 			
 			case SEARCHING:
+				nav.rotateLeft();			//set robot keeping rotating to left
 				Searching searching = new Searching(nav, frontUS, rightUS); 		//create a thread object for searching
 				
 				
@@ -121,8 +122,6 @@ public class BlockHunter extends Thread{
 	private void captureFoam(){
 		nav.revert();	
 		nav.turn(180);    //rotate 180 to get back side facing the foam
-		hookMotorL.rotate(200, true);
-		hookMotorR.rotate(200, false);
 		this.foamCaptured = true;
 	}
 	

@@ -184,6 +184,8 @@ public class Navigation extends Thread{
 		
 		return path;			// return the constituted path	
 	}
+	
+	
 	private ArrayList<Grid> getPath(Grid grid){
 		
 		ArrayList<Grid> path = new ArrayList<>();
@@ -286,6 +288,7 @@ public class Navigation extends Thread{
 		
 		return path;			// return the constituted path	
 	}
+
 	/**
 	 * determine whether robot should move to the right or left, front or back
 	 * @param desiredX

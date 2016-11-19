@@ -3,6 +3,8 @@ package CompetitionExecution;
 import java.util.ArrayList;
 import java.util.List;
 
+import CompetitionExecution.Grid.Status;
+
 
 /**
  * This class serves as a helper for navigation; it will depict the competition field as 10*10 grids,
@@ -116,14 +118,18 @@ public class FieldMap {
 	 * @return double[] 
 	 */
 	public static double[] convertGridToPoint(int gridX, int gridY){
-		double pointX = GRID_LENGTH/2 + (gridX-1)*GRID_LENGTH; 
-		double pointY = GRID_LENGTH/2 + (gridY-1)*GRID_LENGTH; 
+		double pointX = GRID_LENGTH/2 + gridX*GRID_LENGTH; 
+		double pointY = GRID_LENGTH/2 + gridY*GRID_LENGTH; 
 		return new double[] {pointX,pointY};	
 	}
 	
-	/*public static */
+	public List<Grid> getFieldMap(){
+		return this.fieldMap;
+	}
+	
 	
 }
+
 
 class Grid {
 	
@@ -159,6 +165,7 @@ class Grid {
 		return gridIndex[1];
 	}
 	
+	
 	/**
 	 * to compare this grid with reference grid by passing index of reference grid
 	 * @param targetX
@@ -172,10 +179,4 @@ class Grid {
 			return false;
 		}
 	}
-					
-			
 }
-	
-	
-	
-	
