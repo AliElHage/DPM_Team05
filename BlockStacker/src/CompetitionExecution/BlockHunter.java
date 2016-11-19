@@ -16,7 +16,7 @@ public class BlockHunter extends Thread{
 	private EV3LargeRegulatedMotor hookMotorL, hookMotorR;
 	private boolean foamCaptured;
 	private ArrayList<double[]> destinations;				//store the target coordinates after sweeping search
-	
+	private FieldMap map = nav.getFieldMap();
 	public BlockHunter(Navigation nav, USPoller frontUS, USPoller leftUS, USPoller rightUS, LightPoller lightSensor, EV3LargeRegulatedMotor hookMotorL, EV3LargeRegulatedMotor hookMotorR){
 		this.nav = nav;
 		this.frontUS = frontUS;
@@ -58,7 +58,7 @@ public class BlockHunter extends Thread{
 					state = State.TRAVELING;
 				} else {
 					//// if target is a wooden block, then mark it on the map and travel to next target
-					nav.map.markBlocked(destinations.get(0)[0], destinations.get(0)[1]);
+					map.markBlocked(destinations.get(0)[0], destinations.get(0)[1]);
 					Sound.twoBeeps();
 					destinations.remove(0);	   //remove the first target from the collection after detection									
 					state = State.AVOIDING;
@@ -87,7 +87,7 @@ public class BlockHunter extends Thread{
 						state = State.TRAVELING;
 					}else {
 						//// if target is a wooden block, then mark it on the map and travel to next target
-						nav.map.markBlocked(destinations.get(0)[0], destinations.get(0)[1]);
+						map.markBlocked(destinations.get(0)[0], destinations.get(0)[1]);
 						Sound.twoBeeps();
 						destinations.remove(0);	   //remove the first target from the collection after detection									
 						state = State.AVOIDING;

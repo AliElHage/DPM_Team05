@@ -84,24 +84,48 @@ public class Main extends Thread{
 		
 		
 		
-		//test navigation
+		//TEST NAVIGATION
+		FieldMap map = nav.getFieldMap();
 		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});  // reset odometer if skipping localization
 		
-		nav.travelByPath(61, 170);
-		nav.travelByPath(93, 0);
-		nav.travelByPath(0,0);
-		//nav.travelByPath(70, 170);
-		//nav.travelByPath(70, 0);
-		//nav.travelByPath(0, 0);
-		//nav.travelByPath(x, y);
+		/*
+		 * **********************************************************
+		 *	consider 0,0 as localization point
+		 *In each case robot will have the following waypoint on 4*4 grid
+		 *		travels to 45,75 (Grid 1,2)
+		 *		then return to 15,15 (Grid 0,0)
+		 ************************************************************
+		 */
+
+		//Case 1: test up/right/down/left convention
+		//START ROBOT AT BOTTOM LEFT FACING RIGHT
+		
+		//make sure always traveling in right angles
+		nav.travelByPath(new Grid(0,2));
+		Sound.beep();
+		nav.travelByPath(new Grid(1,2));
+		Sound.beep();
+		nav.travelByPath(new Grid(1,0));
+		Sound.beep();
+		nav.travelByPath(new Grid(0,0));
 		
 		
-		//test searching
+		//Case 2: test upRight/DownLeft convention
+		//START ROBOT AT BOTTOM LEFT FACING RIGHT
+		nav.travelByPath(new Grid(1, 2));
+		nav.travelByPath(new Grid(0, 0));
+		
+		//case 3: test upLeft/Downright convention
+		//START ROBOT AT BOTTOM RIGHT FACING RIGHT
+		nav.travelByPath(map.getGrid(1, 2));
+		nav.travelByPath(map.getGrid(0, 0));
+		
+		
+		//TEST SEARCHING
 		//searching.start();
 		
 		
-		
-		// test for claw 
+		//TEST CLAW
 		/*claw.initializeClaw();
 		Delay.msDelay(3000);
 		claw.lift();
