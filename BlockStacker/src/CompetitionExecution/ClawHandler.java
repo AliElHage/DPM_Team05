@@ -7,7 +7,7 @@ public class ClawHandler {
 	
 	final static int clawSpeed = 100;							// speed of clawMotor
 	final static int pulleySpeed = 75;							// speed of pulleyMotor
-	final static double initialHeight = 12;					// initial position of claws relative to the ground
+	final static double initialHeight =8.8;					// initial position of claws relative to the ground
 	final static double minDistanceFromGround = 2.2;			// minimum distance of claw relative to ground
 	final static double safeDropDistance = 1.0;					// amount to lower the claws to safely drop blocks on top of each other
 	final static double safeLiftDistance = 5.0;					// amount by which the claw will be lifted each time it grabs a block
@@ -15,15 +15,16 @@ public class ClawHandler {
 	final static double clawOpenAngle = 50;
 	private static boolean isInitialized = false;				// true if claw has been initialized
 	private EV3LargeRegulatedMotor pulleyMotor, clawMotor;		// all claw-related motors
-	private int counter = 0;									// counts the amount of blocks stacked
+	private int counter;									// counts the amount of blocks stacked
 	
 	// NB FOR PULLEYSPEED: a negative speed is for lowering the claw; positive otherwise
 	// NB FOR CLAWSOPENANGLE: a negative angle is for grabbing; releasing otherwise
 	
 	/** Constructor. */
-	public ClawHandler(EV3LargeRegulatedMotor claw, EV3LargeRegulatedMotor pulleyMotor){
-		this.clawMotor = claw;
+	public ClawHandler(EV3LargeRegulatedMotor clawMotor, EV3LargeRegulatedMotor pulleyMotor){
+		this.clawMotor = clawMotor;
 		this.pulleyMotor = pulleyMotor;
+		this.counter=0;
 	}
 	
 	/** Initializes the claws. First method that should be called when using the claws. To be used
@@ -53,14 +54,19 @@ public class ClawHandler {
 	}
 	
 	public void grab(){
-		
 		clawMotor.setSpeed(clawSpeed);
 		clawMotor.rotate(-(int)clawOpenAngle, false);
 	}
 	
+	
 	public void release(){
 		clawMotor.setSpeed(clawSpeed);
 		clawMotor.rotate((int)clawOpenAngle, false);
+	}
+	
+	public void putDown(){
+		double angleToLift = computePulleyTurnAngle(safeLiftDistance);
+		pulleyMotor.rotate((int)angleToLift, false);
 	}
 	
 	/** Lifts block. Only call when the robot is at the appropriate distance
@@ -82,10 +88,10 @@ public class ClawHandler {
 		// if the robot holds no block
 		if(counter == 0){
 			// grab block
-			clawMotor.rotate(-(int)(clawOpenAngle+5), false);
+			clawMotor.rotate(-(int)(clawOpenAngle+7), false);
 			
 			// lifts the block 5 cm
-			pulleyMotor.rotate((int)angleToLift, false);
+			pulleyMotor.rotate(-(int)angleToLift, false);
 			
 			// count block
 			counter++;
@@ -97,7 +103,7 @@ public class ClawHandler {
 		pulleyMotor.rotate((int)safeLoweringAngle, false);
 		
 		// release block from claws and lower the claw to ground block level
-		clawMotor.rotate((int)clawOpenAngle, false);
+		this.release();
 		pulleyMotor.rotate((int)angleToGrab, false);
 		
 		// grab ground block
@@ -105,7 +111,7 @@ public class ClawHandler {
 		
 		// lift blocks 5 cm and count block
 		pulleyMotor.setSpeed(pulleySpeed);
-		pulleyMotor.rotate((int)angleToLift, false);
+		pulleyMotor.rotate(-(int)angleToLift, false);
 		counter++;
 	}
 	
