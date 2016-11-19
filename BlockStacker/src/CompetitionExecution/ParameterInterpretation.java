@@ -15,7 +15,7 @@ import lejos.hardware.lcd.TextLCD;
  */
 public class ParameterInterpretation {
 	
-	private static final String SERVER_IP = "192.168.2.6";
+	private static final String SERVER_IP = "192.168.2.3";
 	private static final int TEAM_NUMBER = 5;
 	private static TextLCD LCD = LocalEV3.get().getTextLCD();
 
