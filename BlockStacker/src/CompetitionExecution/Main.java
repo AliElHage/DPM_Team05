@@ -117,6 +117,7 @@ public class Main extends Thread{
 		
 		//case 3: test upLeft/Downright convention
 		//START ROBOT AT BOTTOM RIGHT FACING RIGHT
+		odo.setPosition(new double [] {60.0, 0.0,0.0},new boolean []{true, true, true});
 		nav.travelByPath(map.getGrid(1, 2));
 		nav.travelByPath(map.getGrid(0, 0));
 		
