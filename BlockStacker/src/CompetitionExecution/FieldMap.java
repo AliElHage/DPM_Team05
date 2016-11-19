@@ -116,8 +116,8 @@ public class FieldMap {
 	 * @return double[] 
 	 */
 	public static double[] convertGridToPoint(int gridX, int gridY){
-		double pointX = GRID_LENGTH/2 + (gridX-1)*GRID_LENGTH; 
-		double pointY = GRID_LENGTH/2 + (gridY-1)*GRID_LENGTH; 
+		double pointX = GRID_LENGTH/2 + gridX*GRID_LENGTH; 
+		double pointY = GRID_LENGTH/2 + gridY*GRID_LENGTH; 
 		return new double[] {pointX,pointY};	
 	}
 	

@@ -2,7 +2,10 @@ package CompetitionExecution;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
+import lejos.hardware.Sound;
+import lejos.hardware.lcd.LCD;
 /*
  * File: Navigation.java
  * Written by: Sean Lawlor
@@ -69,40 +72,53 @@ public class Navigation extends Thread{
 	 * @param desiredY
 	 * @return ArrayList<Grid>
 	 */
+	int[] destGrid, currentGrid;
 	private ArrayList<Grid> getPath(double desiredX, double desiredY){
+		
 		ArrayList<Grid> path = new ArrayList<>();
-		int[] destGrid = FieldMap.convertPointToGrid(desiredX, desiredY);
-		int[] currentGrid = FieldMap.convertPointToGrid(odometer.getX(), odometer.getY());
+		destGrid = FieldMap.convertPointToGrid(desiredX, desiredY);
+		currentGrid = FieldMap.convertPointToGrid(odometer.getX(), odometer.getY());
+	
+		//test
+		LCD.drawString("curGrid: " +currentGrid[0] +","+ currentGrid[1],0, 3);
+		LCD.drawString("destGrid: " +destGrid[0] +","+ destGrid[1],0, 4);
+		//end test
 		int destGridX = destGrid[0], destGridY = destGrid[1];
 		int currentGridX = currentGrid[0], currentGridY = currentGrid[1];
 		
 		switch (this.determineDirection(desiredX, desiredY)) {
 		case UP:
 			while(currentGridY!=destGridY){
+				LCD.drawString("Up", 0, 2);
 				path.add(map.getGrid(currentGridX, ++currentGridY));		// add the grids to the path collection to constitute a path up
 			}
 			break;
 			
 		case DOWN:
 			while(currentGridY!=destGridY){
+				LCD.drawString("Down", 0, 2);
 				path.add(map.getGrid(currentGridX, --currentGridY));		// add the grid to the path collection to constitute a path down
 			}
 			break;
 			
 		case LEFT:
 			while(currentGridX!=destGridX){
+				LCD.drawString("Left", 0, 2);
 				path.add(map.getGrid(--currentGridX, currentGridY));		// add the grid to the path collection to constitute a path left
 			}
 			break;
 			
-		case RIGHT:
+		case RIGHT:	
 			while(currentGridX!=destGridX){
+				LCD.drawString("Right", 0, 2);
 				path.add(map.getGrid(++currentGridX, currentGridY));		// add the grid to the path collection to to constitute a path right
 			}
 			break;
 			
 		case UPRIGHT:
-			while(currentGridY!=destGridY && currentGridX!=destGridX){
+			while(currentGridY!=destGridY || currentGridX!=destGridX){
+				Sound.beep();
+				LCD.drawString("Upright", 0, 2);
 				if(destGridY > currentGridY && destGridX > currentGridX){
 					path.add(map.getGrid(++currentGridX, ++currentGridY));	// add the grids to the path collection to constitute a path upright
 				}else if(destGridY > currentGridY){
@@ -114,7 +130,8 @@ public class Navigation extends Thread{
 			break;
 		
 		case UPLEFT:
-			while(currentGridY!=destGridY && currentGridX!=destGridX){
+			while(currentGridY!=destGridY || currentGridX!=destGridX){
+				LCD.drawString("Upleft", 0, 2);
 				if(destGridY > currentGridY && destGridX < currentGridX){
 					path.add(map.getGrid(--currentGridX, ++currentGridY));	// add the grids to the path collection to constitute a path upleft
 				}else if(destGridY > currentGridY){
@@ -126,9 +143,10 @@ public class Navigation extends Thread{
 			break;
 			
 		case DOWNLEFT:
-			while(currentGridY!=destGridY && currentGridX!=destGridX){
+			while(currentGridY!=destGridY || currentGridX!=destGridX){
+				LCD.drawString("DownLeft", 0, 2);
 				if(destGridY < currentGridY && destGridX < currentGridX){
-					path.add(map.getGrid(--currentGridX, --currentGridY));	// add the grids to the path collection to constitute a path downleft
+					path.add(map.getGrid(--currentGridX, --currentGridY));		// add the grids to the path collection to constitute a path downleft
 				}else if(destGridY < currentGridY){
 					path.add(map.getGrid(currentGridX, --currentGridY));		// add the grids to the path collection to constitute a path down
 				}else{
@@ -138,9 +156,11 @@ public class Navigation extends Thread{
 			break;
 		
 		case DOWNRIGHT:
-			while(currentGridY!=destGridY && currentGridX!=destGridX){
+			while(currentGridY!=destGridY || currentGridX!=destGridX){
+				Sound.beep();
+				LCD.drawString("DownRight", 0, 2);
 				if(destGridY < currentGridY && destGridX > currentGridX){
-					path.add(map.getGrid(++currentGridX, --currentGridY));	// add the grids to the path collection to constitute a path downright
+					path.add(map.getGrid(++currentGridX, --currentGridY));		// add the grids to the path collection to constitute a path downright
 				}else if(destGridY < currentGridY){
 					path.add(map.getGrid(currentGridX, --currentGridY));		// add the grids to the path collection to constitute a path down
 				}else{
@@ -164,37 +184,36 @@ public class Navigation extends Thread{
 	 * @return Direction
 	 */
 	private Direction determineDirection(double desiredX, double desiredY){	
-		//robot should keep horizontal position
-		if(Math.abs(desiredX - odometer.getX())<DIRECTION_ERR){	
-			if(desiredY > odometer.getY()){		//robot should move to top
-				return Direction.UP;
-			}else{
-				return Direction.DOWN;
-			}
-			
-		//robot should move to right
-		}else if(desiredX > odometer.getX()){	
-			if(Math.abs(desiredY - odometer.getY())<DIRECTION_ERR){		//robot should keep vertical position	
-				return Direction.RIGHT;
-			}else if(desiredY > odometer.getY()){ 	//robot should move to topright
+		//compares grid locations
+		//same grid
+		if(destGrid[0]==currentGrid[0] && destGrid[1]==currentGrid[1])
+			return Direction.UP;	//arbitrary direction because both grids are the same
+		//move right
+		if(destGrid[0]>currentGrid[0]) {
+			if( destGrid[1] > currentGrid[1])
 				return Direction.UPRIGHT;
-			}else{	//robot should move to downright
+			else if( destGrid[1] < currentGrid[1])
 				return Direction.DOWNRIGHT;
-			}
-			
-		// //robot should move to left
-		}else{
-			if(Math.abs(desiredY - odometer.getY())<DIRECTION_ERR){		//robot should keep vertical position	
-				return Direction.LEFT;
-			}else if(desiredY > odometer.getY()){ 	//robot should move to topleft
+			else 
+				return Direction.RIGHT;
+		}
+		//move left
+		else if(destGrid[0]<currentGrid[0]){
+			if( destGrid[1]> currentGrid[1])
 				return Direction.UPLEFT;
-			}else{	//robot should move to downleft
+			else if (destGrid[1] < currentGrid[1] )
 				return Direction.DOWNLEFT;
-			} 
+			else 
+				return Direction.LEFT;
+		}
+		//move up/down
+		else {
+			if(destGrid[1] > currentGrid[1])
+				return Direction.UP;
+			else
+				return Direction.DOWN;
 		}
 	}
-	
-
 	/*
 	 * Functions to set the motor speeds jointly
 	 */
@@ -233,23 +252,36 @@ public class Navigation extends Thread{
 		this.leftMotor.flt(true);
 		this.rightMotor.flt(true);
 	}
-
+	/**
+	 * Drive robot to the destination via the calculated path of grids
+	 * @param gridX x index of Grid
+	 * @param gridY y index of Grid
+	 */
+	public void goToGrid(int gridX, int gridY){
+		double[] dest = FieldMap.convertGridToPoint(gridX,gridY);
+		this.travelTo(dest[0],dest[1]);
+	}
 	/**
 	 * Drive robot to the destination via the calculated path of grids
 	 * @param x
 	 * @param y
 	 */
 	public void travelByPath(double x, double y){
-		ArrayList<Grid> travelPath = this.getPath(x, y);
+		ArrayList<Grid> travelPath = getPath(x, y);
 		for(Grid grid: travelPath){
 			double[] dest = FieldMap.convertGridToPoint(grid.getGridIndex()[0],grid.getGridIndex()[1]);
-			this.travelTo(dest[0],dest[1]);
+				travelTo(dest[0],dest[1]);
+				try {
+					Thread.sleep(300);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 		}
 	}
 	/*
 	 * TravelTo function which takes as arguments the x and y position in cm Will travel to designated position, while
 	 * constantly updating it's heading
-	 */
+	 */	
 	public synchronized void travelTo(double x, double y) {
 		double distance;
 		
@@ -258,7 +290,11 @@ public class Navigation extends Thread{
 		desiredY = y;
 		
 		this.turnToDest(x, y);
-		
+		try {
+			Thread.sleep(300);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		// calculate distance to travel with given coordinates
 		distance = Math.sqrt(Math.pow(Math.abs(x - odometer.getX()), 2) + Math.pow(Math.abs(y - odometer.getY()), 2));   
 		

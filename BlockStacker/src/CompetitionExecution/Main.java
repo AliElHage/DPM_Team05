@@ -1,6 +1,7 @@
 package CompetitionExecution;
 
 import lejos.hardware.Button;
+import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3ColorSensor;
@@ -66,8 +67,7 @@ public class Main extends Thread{
 		Odometer odo = new Odometer(leftMotor, rightMotor, 30, true);
 		Navigation nav = new Navigation(odo);
 		LCDInfo lcd = new LCDInfo(odo,frontUS);
-		Localization loc = new Localization(odo, usValue1, usValue2, usData1, usData2, 
-				colorValue, colorData, leftMotor, rightMotor, nav);
+		Localization loc = new Localization(odo, usValue1, usValue2, usData1, usData2, colorValue, colorData, leftMotor, rightMotor, nav);
 		
 		
 		Searching searching = new Searching(nav, frontUS);
@@ -78,27 +78,26 @@ public class Main extends Thread{
 		/**
 		 * Localize robot
 		 */
-		lcd.initLCD();
-		loc.localize();
-		loc.zeroRobot();
+		//lcd.initLCD();
+		//loc.localize();
+		//loc.zeroRobot();
 		
 		
 		
 		//test navigation
-		/*odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});  // reset odometer if skipping localization
-		nav.travelTo(0, 30.48);
-		nav.travelTo(20, 40);
-		nav.travelTo(20, 60);
-		nav.travelTo(0, 60);
+		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});  // reset odometer if skipping localization
 		
-		
-		nav.travelByPath(0, 30.48);
-		nav.travelByPath(40, 50);
-		nav.travelByPath(20, 0);*/
+		nav.travelByPath(61, 170);
+		nav.travelByPath(93, 0);
+		nav.travelByPath(0,0);
+		//nav.travelByPath(70, 170);
+		//nav.travelByPath(70, 0);
+		//nav.travelByPath(0, 0);
+		//nav.travelByPath(x, y);
 		
 		
 		//test searching
-		/*searching.start();*/
+		//searching.start();
 		
 		
 		
