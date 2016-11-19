@@ -13,24 +13,20 @@ public class BlockHunter extends Thread{
 	private Navigation nav;
 	private LightPoller lightSensor;
 	private USPoller frontUS, leftUS, rightUS;
-	private EV3LargeRegulatedMotor hookMotorL, hookMotorR;
+	private ClawHandler claw; 
 	private boolean foamCaptured;
 	private ArrayList<double[]> destinations;				//store the target coordinates after sweeping search
 	
-	public BlockHunter(Navigation nav, USPoller frontUS, USPoller leftUS, USPoller rightUS, LightPoller lightSensor, EV3LargeRegulatedMotor hookMotorL, EV3LargeRegulatedMotor hookMotorR){
+	public BlockHunter(Navigation nav, USPoller frontUS, USPoller leftUS, USPoller rightUS, ClawHandler claw){
 		this.nav = nav;
 		this.frontUS = frontUS;
-		this.lightSensor = lightSensor;
-		this.hookMotorL = hookMotorL;
-		this.hookMotorR = hookMotorR;
+		this.leftUS = leftUS;
+		this.rightUS = rightUS;
+		this.claw = claw;
 		this.foamCaptured = false;
 		this.destinations = new ArrayList<>();
-		this.hookMotorL.setAcceleration(ACCELERATION);
-		this.hookMotorR.setAcceleration(ACCELERATION);
-		this.hookMotorL.setSpeed(SPEED_NORMAL);
-		this.hookMotorR.setSpeed(SPEED_NORMAL);
+
 	}
-	
 	
 	enum State {SEARCHING, TRAVELING, AVOIDING}		//define three states of robot when it is hunting
 	
@@ -41,9 +37,8 @@ public class BlockHunter extends Thread{
 			switch (state) {
 			
 			case SEARCHING:
-				nav.rotateLeft();			//set robot keeping rotating to left
-				Searching searching = new Searching(nav, frontUS); 		//create a thread object for searching
-				searching.start();
+				Searching searching = new Searching(nav, frontUS, rightUS); 		//create a thread object for searching
+				
 				
 				destinations = searching.trackingTargets();
 				nav.turnToDest(destinations.get(0)[0], destinations.get(0)[1]);  // turn to the first target detected
@@ -72,7 +67,7 @@ public class BlockHunter extends Thread{
 				}
 				nav.setDest(destinations.get(0)[0], destinations.get(0)[1]);
 				(new Thread(nav)).start();			//create a thread to run travelTo in nav
-				if(checkObject()){					//when robot encounter an object 
+				if(checkFront()){					//when robot encounter an object 
 					nav.interruptTraveling();				
 					Sound.twoBeeps();
 					approachTo();
@@ -146,7 +141,7 @@ public class BlockHunter extends Thread{
 	 *  Check if there is any object within vision range
 	 * @return
 	 */
-	private boolean checkObject(){
+	private boolean checkFront(){
 		if(frontUS.readUSDistance() < TARGET_DISTANCE){
 			return true;
 		}else{

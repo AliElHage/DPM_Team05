@@ -32,7 +32,7 @@ public class Navigation extends Thread{
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
 	private double desiredX, desiredY;
 	private boolean interrupted, isTraveling;
-	private FieldMap map; 
+	public FieldMap map; 
 	final static double DEG_ERR = 1.0, CM_ERR = 2.0, DIRECTION_ERR=3.0;
 	private int destGridX, destGridY;
 	private int currentGridX, currentGridY;
@@ -700,6 +700,7 @@ public class Navigation extends Thread{
 	private static int convertAngle(double radius, double width, double angle) {
 		return convertDistance(radius, Math.PI * width * angle / 360.0);
 	}
+	
 	private static int convertDistance(double radius, double distance) {
 		return (int) ((180.0 * distance) / (Math.PI * radius));
 	}

@@ -134,7 +134,8 @@ public class ClawHandler {
 		pulleyMotor.rotate((int)angleToRelease, false);
 		
 		// release tower
-		clawMotor.rotate((int)clawOpenAngle, false);
+		this.release();
+		this.counter = 0;
 		Sound.beep();
 	}
 	
