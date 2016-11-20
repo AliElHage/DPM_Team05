@@ -18,8 +18,8 @@ import lejos.utility.Delay;
 public class Searching extends Thread{
 	
 	final static int ACCELERATION=4000, SPEED_NORMAL=200;
-	final static int VISION_RANGE=90, VISION_ANGLE_START=340, OBJECT_DIS=25;
-	final static int TARGET_NUM = 3, FILTER_OUT = 40, FRONT_SIDE_ERR = 10;	
+	final static int VISION_RANGE=90, VISION_ANGLE_START=340, OBJECT_DIS=40;
+	final static int TARGET_NUM = 3, FILTER_OUT = 40, FRONT_SIDE_ERR = 5;	
 	private Navigation nav;
 	private USPoller frontUS, rightSensor;
 	private int filterControl;

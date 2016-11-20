@@ -86,16 +86,39 @@ public class FieldMap {
 	}
 	
 	/**
-	 * This method return a collection of grids as zone by passing the lower left and upper right points 
+	 * This method return a collection of grids as zone by passing the lower left and upper right gridINDEX
 	 * @param LZx lower left x
 	 * @param LZy lower left y
 	 * @param UZx upper right x
 	 * @param UZy upper right y
-	 * @return
+	 * @return a collection of grids which depict a zone 
 	 */
-	/*public ArrayList<Grid> getZone(double LZx, double LZy, double UZx, double UZy){
-		
-	}*/
+	public ArrayList<Grid> getZone(int LZx, int LZy, int UZx, int UZy){
+		ArrayList<Grid> zone = new ArrayList<>();
+		for(int i=LZx;i<(UZx+1);i++){
+			for(int y=LZy;y<(UZy+1);y++){
+				zone.add(this.getGrid(i, y));
+			}
+		}
+		return zone;
+	}
+	
+	/**
+	 * This method return a collection of grids which depict the outer border of the a zone
+	 * @param LZx lower left x
+	 * @param LZy lower left y
+	 * @param UZx upper right x
+	 * @param UZy upper right y
+	 * @return a collection of grids  which depict the border
+	 */
+	public ArrayList<Grid> getBorder(int LZx, int LZy, int UZx, int UZy){
+		ArrayList<Grid> largerZone = this.getZone(LZx-1, LZy-1, UZx+1, UZy+1);
+		ArrayList<Grid> zone = this.getZone(LZx, LZy, UZx, UZy);
+		for(Grid grid:zone){
+			largerZone.remove(grid);
+		}
+		return largerZone;
+	}
 	
 	
 	/**
@@ -161,6 +184,7 @@ class Grid {
 	public int getGridX(){
 		return gridIndex[0];
 	}
+	
 	public int getGridY(){
 		return gridIndex[1];
 	}

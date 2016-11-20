@@ -9,7 +9,7 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 public class BlockHunter extends Thread{
 	
 	final static int UPDATING_ANGLE=3, ACCELERATION=4000, SPEED_NORMAL=200;
-	final static double TARGET_DISTANCE=6.4, OBJECT_DIS=25, BOARD_EDGE=62;
+	final static double TARGET_DISTANCE=23, OBJECT_DIS=40, BOARD_EDGE=62;
 	private Navigation nav;
 	private LightPoller lightSensor;
 	private USPoller frontUS, leftUS, rightUS;

@@ -37,7 +37,7 @@ public class Main extends Thread{
 		 * Instantiation for Parameter Interpretation
 		 */
 		ParameterInterpretation parInt = new ParameterInterpretation();
-		parInt.interpret();
+		//parInt.interpret();
 		
 		
 		
@@ -71,23 +71,24 @@ public class Main extends Thread{
 		USPoller frontUS = new USPoller(usValue3, usData3);
 		
 		frontUS.start();
+		leftUS.start();
 		rightUS.start();
 		
 		Odometer odo = new Odometer(leftMotor, rightMotor, 30, true);
 		Navigation nav = new Navigation(odo);
-		LCDInfo lcd = new LCDInfo(odo,frontUS);
+		LCDInfo lcd = new LCDInfo(odo, frontUS, leftUS, rightUS);
 		Localization loc = new Localization(odo, usValue1, usValue2, usData1, usData2, colorValue, colorData, leftMotor, rightMotor, nav);
-		
+		ClawHandler claw = new ClawHandler(clawMotor, pulleyMotor);
 		
 		Searching searching = new Searching(nav, frontUS, rightUS);
 		
-		ClawHandler claw = new ClawHandler(clawMotor, pulleyMotor);
+		
 		
 		
 		/**
 		 * Localize robot
 		 */
-		lcd.initLCD();
+		/*lcd.initLCD();
 		loc.localize();
 		loc.zeroRobot();
 		Sound.beepSequence();
@@ -96,14 +97,14 @@ public class Main extends Thread{
 		FieldMap map = nav.getFieldMap();
 		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});  // reset odometer if skipping localization
 		
-		/*
+		
 		 * **********************************************************
 		 *	consider 0,0 as localization point
 		 *In each case robot will have the following waypoint on 4*4 grid
 		 *		travels to 45,75 (Grid 1,2)
 		 *		then return to 15,15 (Grid 0,0)
 		 ************************************************************
-		 */
+		 
 
 		//Case 1: test up/right/down/left convention
 		//START ROBOT AT BOTTOM LEFT FACING RIGHT
@@ -126,11 +127,14 @@ public class Main extends Thread{
 		//START ROBOT AT BOTTOM RIGHT FACING RIGHT
 		odo.setPosition(new double [] {60.0, 0.0,0.0},new boolean []{true, true, true});
 		nav.travelByPath(map.getGrid(1, 2));
-		nav.travelByPath(map.getGrid(0, 0));
+		nav.travelByPath(map.getGrid(0, 0));*/
 		
 		
 		//TEST SEARCHING
 		//searching.start();
+		
+		
+		//TEST object detection
 		
 		
 		//TEST CLAW
