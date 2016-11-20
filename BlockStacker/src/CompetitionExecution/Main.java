@@ -52,7 +52,7 @@ public class Main extends Thread{
 		SensorModes usSensor3 = new EV3UltrasonicSensor(usPort3);
 		SampleProvider usValue3 = usSensor3.getMode("Distance");
 		float[] usData1 = new float[usValue1.sampleSize()];
-		float[] usData2 = new float[usValue1.sampleSize()];		//!!!!*********
+		float[] usData2 = new float[usValue2.sampleSize()];		//!!!!*********
 																//*********there is a bug here. usData2 use usvalue1's method check it~
 		float[] usData3 = new float[usValue3.sampleSize()];
 		
