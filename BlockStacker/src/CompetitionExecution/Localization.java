@@ -312,10 +312,35 @@ public class Localization {
 		 */
 		navigator.turnTo(0, true);
 		
-		/**
-		 * set odometer to confirm that it is now at 0,0,0
-		 */
-		odo.setPosition(new double [] {0, 0, 0}, new boolean [] {true, true, true});
+		if (Main.BTN == 5) {
+			if (Main.BSC == 1) {
+				/**
+				 * set odometer to confirm that it is now at 0,0,0
+				 */
+				odo.setPosition(new double [] {0, 0, odo.getAng()}, new boolean [] {true, true, true});
+			} else if (Main.BSC == 2) {
+				odo.setPosition(new double [] {10, 0, odo.getAng()+90}, new boolean [] {true, true, true});
+			} else if (Main.BSC == 3) {
+				odo.setPosition(new double [] {10, 10, odo.getAng()+180}, new boolean [] {true, true, true});
+			} else if (Main.BSC == 4) {
+				odo.setPosition(new double [] {0, 10, odo.getAng()+270}, new boolean [] {true, true, true});
+			}
+		} else if (Main.CTN == 5) {
+			if (Main.CSC == 1) {
+				/**
+				 * set odometer to confirm that it is now at 0,0,0
+				 */
+				odo.setPosition(new double [] {0, 0, odo.getAng()}, new boolean [] {true, true, true});
+			} else if (Main.CSC == 2) {
+				odo.setPosition(new double [] {10, 0, odo.getAng()+90}, new boolean [] {true, true, true});
+			} else if (Main.CSC == 3) {
+				odo.setPosition(new double [] {10, 10, odo.getAng()+180}, new boolean [] {true, true, true});
+			} else if (Main.CSC == 4) {
+				odo.setPosition(new double [] {0, 10, odo.getAng()+270}, new boolean [] {true, true, true});
+			}
+		}
+		
+		
 	}
 	
 	/**
