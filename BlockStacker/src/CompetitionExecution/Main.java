@@ -40,7 +40,6 @@ public class Main extends Thread{
 		//parInt.interpret();
 		
 		
-		
 		/**
 		 * US declarations
 		 */
@@ -130,19 +129,41 @@ public class Main extends Thread{
 		
 		
 		//TEST SEARCHING
-		searching.start();
+		/*searching.start();
 		searching.trackingTargets();
-		
+		*/
 		
 		//TEST object detection
 		
 		
 		//TEST CLAW
-		/*claw.initializeClaw();
-		Delay.msDelay(3000);
-		claw.lift();
+		//testing basic functions claw
+		/*claw.putDown();
 		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		claw.release();*/
+		claw.pullUp();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.putDownToObj();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.putDownToBot();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.open();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.close();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.pullUp();*/
+		
+		
+		//testing stacking foams
+		claw.grasp();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.grasp();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.grasp();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.releaseTower();
+		
+		
+		
 		
 		
 		//TEST OBJECT DETECTION 
