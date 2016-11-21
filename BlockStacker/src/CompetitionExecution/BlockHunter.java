@@ -126,7 +126,7 @@ public class BlockHunter extends Thread{
 	}
 	
 	/**
-	 * Drive robot to have a ideal distance to object in the front to be ready for color check
+	 * Drive robot to have a ideal distance to object in the front to be ready for object detection
 	 */
 	public void approachTo(){
 		while(frontUS.readUSDistance() > TARGET_DISTANCE){

@@ -22,7 +22,6 @@ public class Searching extends Thread{
 	final static int TARGET_NUM = 3, FILTER_OUT = 20, FRONT_SIDE_ERR = 8, DETECTION_OFFSET=7;	
 	private Navigation nav;
 	private USPoller frontUS, rightSensor;
-	private int filterControl;
 	private boolean searchingDone;
 	private ArrayList<double[]> targets; 				//store the results after sweeping search
 	
@@ -32,7 +31,6 @@ public class Searching extends Thread{
 		this.nav = nav;
 		this.frontUS = frontUS;
 		this.rightSensor = rightSensor;
-		this.filterControl = 0;
 		this.searchingDone = false;
 		targets = new ArrayList<>();
 	}
@@ -61,9 +59,6 @@ public class Searching extends Thread{
 	 */
 	public ArrayList<double []> trackingTargets(){
 		double targetDistance, targetAngle;
-		//boolean filterOn = true;		//by switching filter on and off to ensure robot not to record the same target
-		
-		
 		
 		while(targets.size()<TARGET_NUM){			//store 3 target for each sweeping search 
 			targetDistance = frontUS.getFilteredValue(OBJECT_DIS, FILTER_OUT);
@@ -73,23 +68,6 @@ public class Searching extends Thread{
 			targets.add(new double[] {targetDistance, targetAngle});
 			Sound.beep();
 			Delay.msDelay(1500);	//ensure robot not to record the same target
-			
-			
-			//filter for obeject detection 
-	/*		if (distance < OBJECT_DIS && filterControl < FILTER_OUT) {
-				// when robot first gets cut off value for detection of an object, ignore them at first 
-				filterControl++;
-			} else if(distance < OBJECT_DIS && filterOn) {
-				// when robot keep getting the cut off value for detection of an object, record the distance and theata for localization of the target
-				System.out.println("       "+(int)distance+" "+(int)nav.odometer.getAng());
-				targets.add(new double[] {distance, nav.odometer.getAng()});
-				filterOn = false;			//once robot has record a target, turn filter off
-				Sound.beep();
-			} else if(distance > OBJECT_DIS){
-				// when robot reads distance greater than cut off value again, reset filter to detect next target
-				filterControl = 0;
-				filterOn = true;			
-			}*/
 		}
 		return this.getDestSet(targets);		//convert the distance and angle to x and y of targets to return 
 	}
