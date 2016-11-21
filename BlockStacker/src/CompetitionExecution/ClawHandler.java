@@ -7,7 +7,7 @@ public class ClawHandler {
 	
 	final static int clawSpeed = 100;							// speed of clawMotor
 	final static int pulleySpeed = 75;							// speed of pulleyMotor
-	final static double initialHeight =8.8;					// initial position of claws relative to the ground
+	final static double initialHeight =10.4;					// initial position of claws relative to the ground
 	final static double minDistanceFromGround = 2.2;			// minimum distance of claw relative to ground
 	final static double safeDropDistance = 1.0;					// amount to lower the claws to safely drop blocks on top of each other
 	final static double safeLiftDistance = 5.0;					// amount by which the claw will be lifted each time it grabs a block

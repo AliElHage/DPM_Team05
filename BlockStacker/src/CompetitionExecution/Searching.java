@@ -19,7 +19,7 @@ public class Searching extends Thread{
 	
 	final static int ACCELERATION=4000, SPEED_NORMAL=200;
 	final static int VISION_RANGE=90, VISION_ANGLE_START=340, OBJECT_DIS=40;
-	final static int TARGET_NUM = 3, FILTER_OUT = 40, FRONT_SIDE_ERR = 5;	
+	final static int TARGET_NUM = 3, FILTER_OUT = 20, FRONT_SIDE_ERR = 8, DETECTION_OFFSET=7;	
 	private Navigation nav;
 	private USPoller frontUS, rightSensor;
 	private int filterControl;
@@ -46,6 +46,7 @@ public class Searching extends Thread{
 			if(Math.abs(nav.odometer.getAng() - startingAngle) < Navigation.DEG_ERR){
 				nav.stopMoving();
 				//nav.scoutZone();	// move to next spot to continue searching if robot hasn't found enough targets after sweeping 
+				nav.goForward(15);
 				startingAngle = nav.odometer.getAng();		// update starting angle
 				nav.rotateLeft();							// starting sweeping again 
 				Delay.msDelay(2000);
@@ -66,9 +67,12 @@ public class Searching extends Thread{
 		
 		while(targets.size()<TARGET_NUM){			//store 3 target for each sweeping search 
 			targetDistance = frontUS.getFilteredValue(OBJECT_DIS, FILTER_OUT);
-			targetAngle = nav.odometer.getAng();
+			Delay.msDelay(500);      //ensure robot to record the position of the center of target after a value returned 
+			targetAngle = nav.odometer.getAng();		//record the angle;
+			targetDistance = frontUS.readUSDistance();   //update the distance
 			targets.add(new double[] {targetDistance, targetAngle});
-			
+			Sound.beep();
+			Delay.msDelay(1500);	//ensure robot not to record the same target
 			
 			
 			//filter for obeject detection 
@@ -94,6 +98,7 @@ public class Searching extends Thread{
 	public void stopSeaching(){
 		this.searchingDone = true;
 	}
+	
 	
 	/**
 	 * To get the dest coordinates by distance and angle when robot detect a target
@@ -121,12 +126,13 @@ public class Searching extends Thread{
 	
 	/**
 	 * To detect object in the front is an obstacle or not
-	 * @return booleann
+	 * @return boolean
 	 */
 	public boolean isObstacle(){
 		Delay.msDelay(100); 	// wait 100ms to set up US Sensor 
 		double lowerFront = frontUS.readUSDistance();
-		nav.turn(-90);     		// rotate the robot to check the object by right side US sensor 
+		nav.turn(-90);     		// rotate the robot to check the object by right side US sensor
+		nav.goBackward(DETECTION_OFFSET);//let robot move backward a bit to ensure robot to detect the same spot as front
 		Delay.msDelay(100); 	// wait 100ms to set up US Sensor 
 		double higherRight = rightSensor.readUSDistance();
 		return Math.abs(lowerFront-higherRight) < FRONT_SIDE_ERR; // return object is an obstacle if the difference if within error 

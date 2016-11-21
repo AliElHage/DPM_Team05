@@ -576,10 +576,20 @@ public class Navigation extends Thread{
 	public void goForward(double distance) {
 		this.leftMotor.setSpeed(FAST);
 		this.rightMotor.setSpeed(FAST);
-		
 		this.leftMotor.rotate(convertDistance(Main.WHEEL_RADIUS, distance), true);
 		this.rightMotor.rotate(convertDistance(Main.WHEEL_RADIUS, distance), false);
 	}
+	
+	/**
+	 * Go backward a set distance in cm, and stop at the end
+	 */
+	public void goBackward(double distance) {
+		this.leftMotor.setSpeed(FAST);
+		this.rightMotor.setSpeed(FAST);
+		this.leftMotor.rotate(-convertDistance(Main.WHEEL_RADIUS, distance), true);
+		this.rightMotor.rotate(-convertDistance(Main.WHEEL_RADIUS, distance), false);
+	}
+	
 	
 	/**
 	 * Robot simply rotate to the left without stopping
