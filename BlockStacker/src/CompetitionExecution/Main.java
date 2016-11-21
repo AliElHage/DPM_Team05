@@ -25,9 +25,9 @@ public class Main extends Thread{
 	private static final EV3LargeRegulatedMotor pulleyMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
 	public static final double WHEEL_RADIUS = 2.1;
 	public static final double WIDTH = 19.1;
-	private static final Port usPort1 = LocalEV3.get().getPort("S2");	
-	private static final Port usPort2 = LocalEV3.get().getPort("S1");			//S1 left US
-	private static final Port usPort3 = LocalEV3.get().getPort("S3");			//S3 front US
+	private static final Port usPortRight = LocalEV3.get().getPort("S2");			//S2 right US
+	private static final Port usPortLeft = LocalEV3.get().getPort("S1");			//S1 left US
+	private static final Port usPortFront = LocalEV3.get().getPort("S3");			//S3 front US
 	private static final Port colorPort = LocalEV3.get().getPort("S4");
 	public static int BTN, BSC, CTN, CSC, LRZx, LRZy, URZx, URZy, LGZx, LGZy, UGZx, UGZy;
 	private static boolean isBuilder;
@@ -41,20 +41,18 @@ public class Main extends Thread{
 		
 		
 		
-		
 		/**
 		 * US declarations
 		 */
-		SensorModes usSensor1 = new EV3UltrasonicSensor(usPort1);
-		SampleProvider usValue1 = usSensor1.getMode("Distance");
-		SensorModes usSensor2 = new EV3UltrasonicSensor(usPort2);
-		SampleProvider usValue2 = usSensor2.getMode("Distance");
-		SensorModes usSensor3 = new EV3UltrasonicSensor(usPort3);
-		SampleProvider usValue3 = usSensor3.getMode("Distance");
-		float[] usData1 = new float[usValue1.sampleSize()];
-		float[] usData2 = new float[usValue2.sampleSize()];		//!!!!*********
-																//*********there is a bug here. usData2 use usvalue1's method check it~
-		float[] usData3 = new float[usValue3.sampleSize()];
+		SensorModes usSensorRight = new EV3UltrasonicSensor(usPortRight);
+		SampleProvider usValueRight = usSensorRight.getMode("Distance");
+		SensorModes usSensorLeft = new EV3UltrasonicSensor(usPortLeft);
+		SampleProvider usValueLeft = usSensorLeft.getMode("Distance");
+		SensorModes usSensorFront = new EV3UltrasonicSensor(usPortFront);
+		SampleProvider usValueFront = usSensorFront.getMode("Distance");
+		float[] usDataRight = new float[usValueRight.sampleSize()];
+		float[] usDataLeft = new float[usValueLeft.sampleSize()];		
+		float[] usDataFront = new float[usValueFront.sampleSize()];
 		
 		/**
 		 * Color declarations
@@ -66,22 +64,22 @@ public class Main extends Thread{
 		/**
 		 * Class instantiations
 		 */
-		USPoller leftUS = new USPoller(usValue1, usData1);
-		USPoller rightUS = new USPoller(usValue2, usData2);
-		USPoller frontUS = new USPoller(usValue3, usData3);
+		USPoller rightUS = new USPoller(usValueRight, usDataRight);
+		USPoller leftUS = new USPoller(usValueLeft, usDataLeft);
+		USPoller frontUS = new USPoller(usValueFront, usDataFront);
 		
-		frontUS.start();
-		leftUS.start();
 		rightUS.start();
+		leftUS.start();
+		frontUS.start();
 		
 		Odometer odo = new Odometer(leftMotor, rightMotor, 30, true);
 		Navigation nav = new Navigation(odo);
 		LCDInfo lcd = new LCDInfo(odo, frontUS, leftUS, rightUS);
-		Localization loc = new Localization(odo, usValue1, usValue2, usData1, usData2, colorValue, colorData, leftMotor, rightMotor, nav);
+		Localization loc = new Localization(odo, usValueRight, usValueLeft, usDataRight, usDataLeft, colorValue, colorData, leftMotor, rightMotor, nav);
 		ClawHandler claw = new ClawHandler(clawMotor, pulleyMotor);
 		
 		Searching searching = new Searching(nav, frontUS, rightUS);
-		
+		BlockHunter blockHunter = new BlockHunter(nav, frontUS, leftUS, rightUS, claw);
 		
 		
 		
@@ -93,7 +91,8 @@ public class Main extends Thread{
 		loc.zeroRobot();
 		Sound.beepSequence();
 		
-		//TEST NAVIGATION
+		
+		TEST NAVIGATION
 		FieldMap map = nav.getFieldMap();
 		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});  // reset odometer if skipping localization
 		
@@ -131,7 +130,8 @@ public class Main extends Thread{
 		
 		
 		//TEST SEARCHING
-		//searching.start();
+		searching.start();
+		searching.trackingTargets();
 		
 		
 		//TEST object detection
@@ -143,6 +143,15 @@ public class Main extends Thread{
 		claw.lift();
 		while (Button.waitForAnyPress() != Button.ID_RIGHT);
 		claw.release();*/
+		
+		
+		//TEST OBJECT DETECTION 
+		/*blockHunter.approachTo();
+		if(searching.isObstacle()){
+			Sound.beepSequence();
+		}else{
+			Sound.beep();
+		}*/
 		
 		
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
