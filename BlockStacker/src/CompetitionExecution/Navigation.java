@@ -26,32 +26,17 @@ import lejos.utility.Delay;
  */
 public class Navigation extends Thread{
 	enum Direction {LEFT,RIGHT,UP,DOWN,UPLEFT,UPRIGHT,DOWNLEFT,DOWNRIGHT}
+	
 	static final int TURN_SPEED = 150;
-	final static int FAST = 200, SLOW = 150, ACCELERATION = 4000;    //SLOW =60  FAST =175
+	final static int FAST = 200, SLOW = 150, SACNNNG_SPEED = 80, ACCELERATION = 4000;    //SLOW =60  FAST =175
 	public Odometer odometer;
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
 	private double desiredX, desiredY;
+	private int destGridX, destGridY, currentGridX, currentGridY;
 	private boolean interrupted, isTraveling;
 	public FieldMap map; 
-	final static double DEG_ERR = 1.0, CM_ERR = 2.0, DIRECTION_ERR=3.0;
-	private int destGridX, destGridY;
-	private int currentGridX, currentGridY;
-	private int[] currentGrid;
-	private int[] destGrid;
-	/**
-	 * This class helps to find a path comprised of a collection of grids the robot should cover to get to dest. 
-	 * @param desiredX
-	 * @param desiredY
-	 * @return ArrayList<Grid>
-	 */
-	
-	/**
-	 * This class helps to find a path comprised of a collection of grids the robot should cover to get to dest. 
-	 * @param desiredX
-	 * @param desiredY
-	 * @return ArrayList<Grid>
-	 */
-	
+	final static double DEG_ERR = 1.0, CM_ERR = 1.0;
+
 	public Navigation(Odometer odo) {
 		this.odometer = odo;
 		this.interrupted = false;
@@ -84,20 +69,58 @@ public class Navigation extends Thread{
 		this.desiredY = desiredY;
 	}
 	
+	
+	private ArrayList<Grid> calculatePath(Grid gridDest){
+		int index = 0;
+		ArrayList<Grid> prePath1 = this.getPath(gridDest);	//create two array for taking upper and lower detour respectively
+		ArrayList<Grid> prePath2 = this.getPath(gridDest);
+		for(Grid grid: prePath1){
+			if(map.checkBlocked(grid)){
+				prePath1.remove(grid);
+				prePath2.remove(grid);
+				prePath1.addAll(index, map.getUpperDetour(grid));
+				prePath2.addAll(index, map.getLowerDetour(grid));
+			}
+			index++;
+		}
+		map.revisePath(prePath1);
+		map.revisePath(prePath2);
+		if(prePath1.size()<prePath2.size()){	// if taking upper detour covers less grids then return it
+			return prePath1;
+		}else{									//otherwise return the lower detour
+			return prePath2;
+		}
+	}
+		
+	
+	
+	/**
+	 * This class helps to find a path comprised of a collection of grids the robot should cover to get to dest. 
+	 * @param desiredX
+	 * @param desiredY
+	 * @return ArrayList<Grid>
+	 */
 	private ArrayList<Grid> getPath(double desiredX, double desiredY){
 		ArrayList<Grid> path = getPath(map.getGrid(desiredX, desiredY));
 		return path;			// return the constituted path	
 	}
 	
 	
+	
+	/**
+	 * This class helps to find a path comprised of a collection of grids the robot should cover to get to dest.
+	 * @param gridDest
+	 * @return
+	 */
 	private ArrayList<Grid> getPath(Grid gridDest){
+		int [] currentGridIndex;
 		
 		ArrayList<Grid> path = new ArrayList<>();
 		destGridX = gridDest.getGridX();
 		destGridY = gridDest.getGridY();
-		currentGrid = FieldMap.convertPointToGrid(odometer.getX(), odometer.getY());
-		currentGridX = currentGrid[0];
-		currentGridY = currentGrid[1];
+		currentGridIndex = FieldMap.convertPointToGrid(odometer.getX(), odometer.getY());
+		currentGridX = currentGridIndex[0];
+		currentGridY = currentGridIndex[1];
 		
 		//test
 		LCD.drawString("curGrid: " +currentGridX +","+ currentGridY,0, 3);
@@ -233,42 +256,23 @@ public class Navigation extends Thread{
 	
 	
 	/**
-	 * determine whether robot should move to the right or left, front or back
+	 * determine whether robot should move to the right or left, front or behind
 	 * @param desiredX
 	 * @param desiredY
 	 * @return Direction
 	 */
 	private Direction determineDirection(double desiredX, double desiredY){	
-		//compares grid locations
-		//same grid
-		if(destGrid[0]==currentGrid[0] && destGrid[1]==currentGrid[1])
-			return Direction.UP;	//arbitrary direction because both grids are the same
-		//move right
-		if(destGrid[0]>currentGrid[0]) {
-			if( destGrid[1] > currentGrid[1])
-				return Direction.UPRIGHT;
-			else if( destGrid[1] < currentGrid[1])
-				return Direction.DOWNRIGHT;
-			else 
-				return Direction.RIGHT;
-		}
-		//move left
-		else if(destGrid[0]<currentGrid[0]){
-			if( destGrid[1]> currentGrid[1])
-				return Direction.UPLEFT;
-			else if (destGrid[1] < currentGrid[1] )
-				return Direction.DOWNLEFT;
-			else 
-				return Direction.LEFT;
-		}
-		//move up/down
-		else {
-			if(destGrid[1] > currentGrid[1])
-				return Direction.UP;
-			else
-				return Direction.DOWN;
-		}
+		Grid destGrid = map.getGrid(desiredX, desiredY);
+		Grid currentGrid = map.getGrid(odometer.getX(), odometer.getY());
+		destGridX = destGrid.getGridX();
+		destGridY = destGrid.getGridY();
+		currentGridX = currentGrid.getGridX();
+		currentGridY = currentGrid.getGridY();
+		return determineDirection();
 	}
+	
+	
+	
 	/*
 	 * Functions to set the motor speeds jointly
 	 */
@@ -331,26 +335,18 @@ public class Navigation extends Thread{
 	
 	/**
 	 * Drive robot to the destination via the calculated path of grids
-	 * @param x
-	 * @param y
+	 * @param x coordinate of destination point
+	 * @param y coordinate of destination point
 	 */
 	public synchronized void travelByPath(double x, double y){
-		ArrayList<Grid> travelPath = getPath(x, y);
-		for(Grid grid: travelPath){
-			double[] dest = FieldMap.convertGridToPoint(grid.getGridIndex()[0],grid.getGridIndex()[1]);
-				travelTo(dest[0],dest[1]);
-				try {
-					Thread.sleep(300);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-		}
+		Grid destGrid = map.getGrid(x, y);
+		this.travelByPath(destGrid);
 	}
+	
 	
 	/**
 	 * Drive robot to the destination via the calculated path of grids
-	 * @param x
-	 * @param y
+	 * @param destGrid
 	 */
 	public void travelByPath(Grid destGrid){
 		ArrayList<Grid> travelPath = getPath(destGrid);
@@ -376,7 +372,7 @@ public class Navigation extends Thread{
 		desiredY = y;
 		
 		this.turnToDest(x, y);
-		Delay.msDelay(300);
+		Delay.msDelay(200);
 		// calculate distance to travel with given coordinates
 		distance = Math.sqrt(Math.pow(Math.abs(x - odometer.getX()), 2) + Math.pow(Math.abs(y - odometer.getY()), 2));   
 		
@@ -491,6 +487,7 @@ public class Navigation extends Thread{
 		return (Math.abs(desiredX - odometer.getX()) < CM_ERR && Math.abs(desiredY - odometer.getY()) < CM_ERR);
 	}
 
+	
 	/**
 	 * TurnTo function which takes an angle and boolean as arguments The boolean controls whether or not to stop the
 	 * motors when the turn is completed
@@ -528,13 +525,15 @@ public class Navigation extends Thread{
 		this.turnTo(odometer.getAng()-angle, true);
 	}
 	
+	/**
+	 * robot turn 360 degree and stops at the end
+	 */
 	public void turnCircle(){
-		double initialAngle = odometer.getAng();
-		turn(-30);		// set up for turning a circle
-		rotateLeft();
+		double initialAngle = odometer.getAng();		
+		this.rotateLeft();
+		Delay.msDelay(2000);   // set up for turning a circle
 		while(Math.abs(odometer.getAng() - initialAngle) > DEG_ERR);
 		this.setSpeeds(0, 0);
-		try { Thread.sleep(500); } catch(Exception e){}
 	}
 	
 	public boolean isTraveling(){
@@ -592,10 +591,10 @@ public class Navigation extends Thread{
 	
 	
 	/**
-	 * Robot simply rotate to the left without stopping
+	 * Robot simply rotate to the left specifically used for scanning objects
 	 */
 	public void rotateLeft() {
-		this.setSpeeds(-SLOW, SLOW);
+		this.setSpeeds(-SACNNNG_SPEED, SACNNNG_SPEED);
 	}
 	
 	/**
@@ -634,5 +633,15 @@ public class Navigation extends Thread{
 	private static int convertDistance(double radius, double distance) {
 		return (int) ((180.0 * distance) / (Math.PI * radius));
 	}
+
+	public double getDesiredX() {
+		return desiredX;
+	}
+
+	public double getDesiredY() {
+		return desiredY;
+	}
+	
+	
 
 } 
