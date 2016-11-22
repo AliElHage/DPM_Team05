@@ -4,14 +4,15 @@ import java.util.ArrayList;
 
 import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
+import lejos.utility.Delay;
 
 
 public class BlockHunter extends Thread{
 	
-	final static int UPDATING_ANGLE=3, ACCELERATION=4000, SPEED_NORMAL=200;
+	final static int ACCELERATION=4000, SPEED_NORMAL=200;
 	final static double TARGET_DISTANCE=12, OBJECT_DIS=40, BOARD_EDGE=62;
+	final static double FRONT_SIDE_ERR = 8, DETECTION_OFFSET= 4.3;
 	private Navigation nav;
-	private LightPoller lightSensor;
 	private USPoller frontUS, leftUS, rightUS;
 	private ClawHandler claw; 
 	private boolean foamCaptured;
@@ -37,25 +38,23 @@ public class BlockHunter extends Thread{
 			switch (state) {
 			
 			case SEARCHING:
-				nav.rotateLeft();			//set robot keeping rotating to left
-				Searching searching = new Searching(nav, frontUS, rightUS); 		//create a thread object for searching
-				
-				
+				Searching searching = new Searching(nav, frontUS, rightUS);  //create a searching instance
+				searching.start();	//start a thread keep checking if robot has rotated 360 and drive to next spot  if so
 				destinations = searching.trackingTargets();
+				searching.stopSearching(); 		// stop the searching thread if targets have been found
 				nav.turnToDest(destinations.get(0)[0], destinations.get(0)[1]);  // turn to the first target detected
 				this.approachTo(); // approach to the object to be ready for color check
 				
-				if (lightSensor.colorCheck()) {
+				if (!this.isObstacle()) {
 					// if target is a styrofoam, then grasp it
 					Sound.beep();
-					captureFoam(); // ********************************fix later***************************************
-					nav.setDest(BOARD_EDGE, BOARD_EDGE); // initialize the dest************************************fix later 
+					claw.grasp(); 
 					destinations.remove(0);	   //remove the first target from the collection after detection									
 					state = State.TRAVELING;
 				} else {
 					//// if target is a wooden block, then mark it on the map and travel to next target
 					nav.map.markBlocked(destinations.get(0)[0], destinations.get(0)[1]);
-					Sound.twoBeeps();
+					Sound.beepSequence();
 					destinations.remove(0);	   //remove the first target from the collection after detection									
 					state = State.AVOIDING;
 				}
@@ -70,15 +69,12 @@ public class BlockHunter extends Thread{
 				(new Thread(nav)).start();			//create a thread to run travelTo in nav
 				if(checkFront()){					//when robot encounter an object 
 					nav.interruptTraveling();				
-					Sound.twoBeeps();
-					approachTo();
 					this.approachTo(); // approach to the object to be ready for color check
 					
-					if (lightSensor.colorCheck()) {
+					if (!this.isObstacle()) {
 						// if target is a styrofoam, then grasp it
 						Sound.beep();
-						captureFoam(); // ********************************fix later***************************************
-						nav.setDest(BOARD_EDGE, BOARD_EDGE); // initialize the dest************************************fix later 
+						claw.grasp(); 
 						destinations.remove(0);	   //remove the first target from the collection after detection									
 						state = State.TRAVELING;
 					}else {
@@ -86,7 +82,7 @@ public class BlockHunter extends Thread{
 						nav.map.markBlocked(destinations.get(0)[0], destinations.get(0)[1]);
 						Sound.twoBeeps();
 						destinations.remove(0);	   //remove the first target from the collection after detection									
-						state = State.AVOIDING;
+						state = State.TRAVELING;
 						}
 				}
 				break;
@@ -119,11 +115,6 @@ public class BlockHunter extends Thread{
 		}
 	}
 	
-	private void captureFoam(){
-		nav.revert();	
-		nav.turn(180);    //rotate 180 to get back side facing the foam
-		this.foamCaptured = true;
-	}
 	
 	/**
 	 * Drive robot to have a ideal distance to object in the front to be ready for object detection
@@ -141,12 +132,27 @@ public class BlockHunter extends Thread{
 	 * @return
 	 */
 	private boolean checkFront(){
-		if(frontUS.readUSDistance() < TARGET_DISTANCE){
+		if(frontUS.readUSDistance() < OBJECT_DIS){
 			return true;
 		}else{
 			return false;
 		}
 	}
+	
+	/**
+	 * To detect object in the front is an obstacle or not
+	 * @return boolean
+	 */
+	public boolean isObstacle(){
+		Delay.msDelay(100); 	// wait 100ms to set up US Sensor 
+		double lowerFront = frontUS.readUSDistance();
+		nav.turn(-90);     		// rotate the robot to check the object by right side US sensor
+		nav.goBackward(DETECTION_OFFSET);//let robot move backward a bit to ensure robot to detect the same spot as front
+		Delay.msDelay(100); 	// wait 100ms to set up US Sensor 
+		double higherRight = rightUS.readUSDistance();
+		return Math.abs(lowerFront-higherRight) < FRONT_SIDE_ERR; // return object is an obstacle if the difference if within error 
+	}
+	
 	
 	
 	public boolean obstacleTesting(){
