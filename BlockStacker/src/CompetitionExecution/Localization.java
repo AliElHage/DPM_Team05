@@ -24,15 +24,13 @@ public class Localization {
 	/**
 	 * ultrasonic sensor localization specific variables
 	 */
-	private SampleProvider usSensor1, usSensor2;
-	private float[] usData1, usData2;
+	private USPoller rightUS, leftUS;
 	private int threshDist = 20;
 	
 	/**
 	 * light sensor localization specific variables
 	 */
-	private static SampleProvider colorSensor;
-	private static float[] colorData;	
+	private static LightPoller lightSensor;
 	private int extraDist = 4;
 	private double distance = 12.5;
 	double x, y, angleX, angleY;
@@ -49,16 +47,13 @@ public class Localization {
 	 * @param rightMotor right motor used to physically move robot
 	 * @param navigator same navigator to be used for moving robot in localize() and zeroRobot() methods
 	 */
-	public Localization(Odometer odo,  SampleProvider usSensor1, SampleProvider usSensor2, float[] usData1,
-			float[] usData2, SampleProvider colorSensor, float[] colorData, EV3LargeRegulatedMotor leftMotor, 
+	public Localization(Odometer odo,  USPoller rightUS, USPoller leftUS, 
+			LightPoller lightSensor, EV3LargeRegulatedMotor leftMotor, 
 			EV3LargeRegulatedMotor rightMotor, Navigation navigator) {
 		this.odo = odo;
-		this.usSensor1 = usSensor1;
-		this.usSensor2 = usSensor2;
-		this.usData1 = usData1;
-		this.usData2 = usData2;
-		this.colorSensor = colorSensor;
-		this.colorData = colorData;
+		this.rightUS = rightUS;
+		this.leftUS = leftUS;
+		this.lightSensor = lightSensor;
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
 		this.navigator = navigator;
@@ -84,7 +79,9 @@ public class Localization {
 //			
 //			}
 			
-			//start rising edge procedure by turning robot
+			/**
+			 * start rising edge procedure by turning robot
+			 */
 			leftMotor.forward();
 			rightMotor.backward();
 			
@@ -95,7 +92,7 @@ public class Localization {
 			 * positioning, then continue the procedure
 			 */
 			while (true) {
-				if(getFilteredData1() <= threshDist){
+				if(rightUS.readUSDistance() <= threshDist){
 					Sound.beep();
 					leftMotor.stop();
 					rightMotor.stop();
@@ -110,13 +107,6 @@ public class Localization {
 			
 			LCD.drawString("AngleA: " + angleA, 0, 0);
 			LCD.drawString("OdometerA: " + odo.getAng(), 0, 1);
-			
-//			/** 
-//			 * stop checking for distance from wall while the robot turns 90 degrees 
-//			 * to ensure that the sensor does not stop rotation too early
-//			 */
-//			leftMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 90), true);
-//			rightMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 90), false);
 
 			/**
 			 * start normal turning clockwise
@@ -130,7 +120,7 @@ public class Localization {
 			 * it is at in angleB, the second angle used for angular positioning
 			 */
 			while (true){
-				if(getFilteredData2() <= threshDist){
+				if(leftUS.readUSDistance() <= threshDist){
 					Sound.beep();
 					leftMotor.stop();
 					rightMotor.stop();
@@ -162,51 +152,7 @@ public class Localization {
 			 */
 			navigator.turnTo(0, true);
 	}
-	
-	/**
-	 * polling method for right US sensor
-	 * @return report distance of us1 from closest object
-	 */
-	public float getFilteredData1() {
-		
-		usSensor1.fetchSample(usData1, 0);
-		float distance = 100*usData1[0];
-				
-		return distance;
-	}
-	
-	/**
-	 * polling method for left US sensor
-	 * @return report distance of us2 from closest object
-	 */
-	public float getFilteredData2() {
-		usSensor2.fetchSample(usData2, 0);
-		float distance = 100*usData2[0];
-				
-		return distance;
-	}
 
-//	/**
-//	 * methods originally from SquareDriver class in Lab2
-//	 * @param radius
-//	 * @param width
-//	 * @param angle
-//	 * @return
-//	 */
-//	private static int convertAngle(double radius, double width, double angle) {
-//		return convertDistance(radius, Math.PI * width * angle / 360.0);
-//	}
-//	
-//	/**
-//	 * 
-//	 * @param radius
-//	 * @param distance
-//	 * @return
-//	 */
-//	private static int convertDistance(double radius, double distance) {
-//		return (int) ((180.0 * distance) / (Math.PI * radius));
-//	}
-	
 	/**
 	 * determine where the zero-zero point on the floor grid is by getting angles between
 	 * the first and third and second and fourth grid lines the light sensor detects and
@@ -223,11 +169,6 @@ public class Localization {
 		 * moves robot forward 15cm to properly place sensor to check lines
 		 */
 		navigator.goForward(15);
-		
-//		/**
-//		 * turns robot 180 degrees so that it can check lines by turning clockwise
-//		 */
-//		navigator.turnTo(180, true);
 		
 		/**
 		 * instantiate array that will hold angle at each line and index of each line
@@ -253,7 +194,7 @@ public class Localization {
 		 * 1, then line 2, then line 3). Then sleeps for 500ms so that the line is not detected twice.
 		 */
 		while (lineNumber < 4) {
-			if (lineCrossed()) {
+			if (lightSensor.lineCrossed()) {
 				Sound.beep();
 				angles[lineNumber] = odo.getAng();
 				lineNumber +=1;
@@ -271,12 +212,7 @@ public class Localization {
 		 */
 		leftMotor.stop();
 		rightMotor.stop();
-		
-//		LCD.drawString("First Angle: " + angles[0], 0, 0);
-//		LCD.drawString("Second Angle: " + angles[1], 0, 1);
-//		LCD.drawString("Third Angle: " + angles[2], 0, 2);
-//		LCD.drawString("Fourth Angle: " + angles[3], 0, 3);
-		
+
 		/**
 		 * formula from the slides, angles are those taken when passing line
 		 */
@@ -294,7 +230,6 @@ public class Localization {
 		/**
 		 * turns to theta=0 to make it easier to set odometer position
 		 */
-//		navigator.turnTo(0, true);
 		
 		/**
 		 * sets x and y knowing that theta is 0
@@ -372,19 +307,5 @@ public class Localization {
 		
 		
 	}
-	
-	/**
-	 * polls color sensor to get the data to see if it passes over a line.
-	 * returns a boolean true if it does cross a line.
-	 */
-	private static boolean lineCrossed(){
-		colorSensor.fetchSample(colorData, 0);
-//		System.out.println("Sensor reading: " + colorData[0]);
-		if(colorData[0] < 0.30){
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
+
 }

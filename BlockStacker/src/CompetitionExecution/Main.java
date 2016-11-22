@@ -59,6 +59,7 @@ public class Main extends Thread{
 		SensorModes colorSensor = new EV3ColorSensor(colorPort);
 		SampleProvider colorValue = colorSensor.getMode("Red");			
 		float[] colorData = new float[colorValue.sampleSize()];
+		LightPoller lightSensor = new LightPoller(colorValue, colorData);
 		
 		/**
 		 * Class instantiations
@@ -74,7 +75,7 @@ public class Main extends Thread{
 		Odometer odo = new Odometer(leftMotor, rightMotor, 30, true);
 		Navigation nav = new Navigation(odo);
 		LCDInfo lcd = new LCDInfo(odo, frontUS, leftUS, rightUS);
-		Localization loc = new Localization(odo, usValueRight, usValueLeft, usDataRight, usDataLeft, colorValue, colorData, leftMotor, rightMotor, nav);
+		Localization loc = new Localization(odo, rightUS, leftUS, lightSensor, leftMotor, rightMotor, nav);
 		ClawHandler claw = new ClawHandler(clawMotor, pulleyMotor);
 		
 		Searching searching = new Searching(nav, frontUS, rightUS);
