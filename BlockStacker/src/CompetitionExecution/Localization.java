@@ -163,6 +163,10 @@ public class Localization {
 			navigator.turnTo(0, true);
 	}
 	
+	/**
+	 * polling method for right US sensor
+	 * @return report distance of us1 from closest object
+	 */
 	public float getFilteredData1() {
 		
 		usSensor1.fetchSample(usData1, 0);
@@ -171,6 +175,10 @@ public class Localization {
 		return distance;
 	}
 	
+	/**
+	 * polling method for left US sensor
+	 * @return report distance of us2 from closest object
+	 */
 	public float getFilteredData2() {
 		usSensor2.fetchSample(usData2, 0);
 		float distance = 100*usData2[0];
@@ -264,10 +272,10 @@ public class Localization {
 		leftMotor.stop();
 		rightMotor.stop();
 		
-		LCD.drawString("First Angle: " + angles[0], 0, 0);
-		LCD.drawString("Second Angle: " + angles[1], 0, 1);
-		LCD.drawString("Third Angle: " + angles[2], 0, 2);
-		LCD.drawString("Fourth Angle: " + angles[3], 0, 3);
+//		LCD.drawString("First Angle: " + angles[0], 0, 0);
+//		LCD.drawString("Second Angle: " + angles[1], 0, 1);
+//		LCD.drawString("Third Angle: " + angles[2], 0, 2);
+//		LCD.drawString("Fourth Angle: " + angles[3], 0, 3);
 		
 		/**
 		 * formula from the slides, angles are those taken when passing line
@@ -312,6 +320,10 @@ public class Localization {
 		 */
 		navigator.turnTo(0, true);
 		
+		/**
+		 * based on if our team is builder or collector, BSC or CSC will hold our starting corner, respectively
+		 * set x,y,theta based on starting corner
+		 */
 		if (Main.BTN == 5) {
 			if (Main.BSC == 1) {
 				/**
@@ -319,10 +331,19 @@ public class Localization {
 				 */
 				odo.setPosition(new double [] {0, 0, odo.getAng()}, new boolean [] {true, true, true});
 			} else if (Main.BSC == 2) {
+				/**
+				 * set odometer to confirm that it is now at 10,0,90
+				 */
 				odo.setPosition(new double [] {10, 0, odo.getAng()+90}, new boolean [] {true, true, true});
 			} else if (Main.BSC == 3) {
+				/**
+				 * set odometer to confirm that it is now at 10,10,180
+				 */
 				odo.setPosition(new double [] {10, 10, odo.getAng()+180}, new boolean [] {true, true, true});
 			} else if (Main.BSC == 4) {
+				/**
+				 * set odometer to confirm that it is now at 0,10,270
+				 */
 				odo.setPosition(new double [] {0, 10, odo.getAng()+270}, new boolean [] {true, true, true});
 			}
 		} else if (Main.CTN == 5) {
@@ -332,10 +353,19 @@ public class Localization {
 				 */
 				odo.setPosition(new double [] {0, 0, odo.getAng()}, new boolean [] {true, true, true});
 			} else if (Main.CSC == 2) {
+				/**
+				 * set odometer to confirm that it is now at 10,0,90
+				 */
 				odo.setPosition(new double [] {10, 0, odo.getAng()+90}, new boolean [] {true, true, true});
 			} else if (Main.CSC == 3) {
+				/**
+				 * set odometer to confirm that it is now at 10,10,180
+				 */
 				odo.setPosition(new double [] {10, 10, odo.getAng()+180}, new boolean [] {true, true, true});
 			} else if (Main.CSC == 4) {
+				/**
+				 * set odometer to confirm that it is now at 0,10,270
+				 */
 				odo.setPosition(new double [] {0, 10, odo.getAng()+270}, new boolean [] {true, true, true});
 			}
 		}
