@@ -18,6 +18,7 @@ public class Localization {
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
 	private int FORWARD_SPEED = 200;
 	private int ROTATION_SPEED = 150;
+	private int LEFT_TURN_SPEED = 75;
 	private Odometer odo;
 	private Navigation navigator;
 	
@@ -26,6 +27,8 @@ public class Localization {
 	 */
 	private USPoller rightUS, leftUS, frontUS;
 	private int threshDist = 20;
+	private int wallThresh = 40;
+	private int correctionAng = 3;
 	
 	/**
 	 * light sensor localization specific variables
@@ -38,11 +41,10 @@ public class Localization {
 	/**
 	 * constructor for Localizer that can do both light and ultrasonic sensor parts of localization, each having its own associated methods
 	 * @param odo same odometer to be used for determining position in localize() and zeroRobot() methods
-	 * @param usSensor1 right sensor used to localize robot in falling edge style
-	 * @param usSensor2 left sensor used to localize robot in falling edge style
-	 * @param usData used to hold data from us sensor
-	 * @param colorSensor used to zero robot on line intersection using light sensor
-	 * @param colorData used to hold data from light sensor
+	 * @param rightUS right sensor used to localize robot in falling edge style
+	 * @param leftUS left sensor used to localize robot in falling edge style
+	 * @param frontUS front sensor used to check if robot is facing wall
+	 * @param lightSensor used to zero robot on line intersection using light sensor
 	 * @param leftMotor left motor used to physically move robot
 	 * @param rightMotor right motor used to physically move robot
 	 * @param navigator same navigator to be used for moving robot in localize() and zeroRobot() methods
@@ -66,6 +68,7 @@ public class Localization {
 	 */
 	public void localize() {
 		double angleA, angleB, angleAvg;
+		boolean leftTurnToZero;
 		
 		leftMotor.setSpeed(ROTATION_SPEED);
 		rightMotor.setSpeed(ROTATION_SPEED);
@@ -74,7 +77,7 @@ public class Localization {
 			 * if the robot starts facing a wall, turn it 180 degrees so it has passed
 			 * the appointed threshold distance, then start rising edge procedure
 			 */
-			if (frontUS.readUSDistance() <= threshDist) {
+			if (frontUS.readUSDistance() <= wallThresh) {
 				leftMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 180), true);
 				rightMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 180), false);
 			
@@ -84,6 +87,8 @@ public class Localization {
 			 * start turning in direction in which side sensor is farther from the wall
 			 */
 			if(rightUS.readUSDistance() > leftUS.readUSDistance()) {
+				
+				leftTurnToZero = false;
 				
 				/**
 				 * start rising edge procedure by turning robot
@@ -133,6 +138,8 @@ public class Localization {
 				}
 				
 			} else {
+				
+				leftTurnToZero = true;
 				
 				/**
 				 * start rising edge procedure by turning robot
@@ -194,7 +201,13 @@ public class Localization {
 			LCD.drawString("Avg: " + angleAvg, 0, 4);
 			LCD.drawString("Avg+B: " + (angleAvg+angleB), 0, 5);
 			
-			odo.setPosition(new double [] {0.0, 0.0, (angleAvg + angleB - 90)}, new boolean []{true, true, true});
+			if(leftTurnToZero) {
+				odo.setPosition(new double [] {0.0, 0.0, (angleAvg + angleB - 90 - correctionAng)}, new boolean []{true, true, true});
+				leftMotor.setSpeed(LEFT_TURN_SPEED);
+				rightMotor.setSpeed(LEFT_TURN_SPEED);
+			} else {
+				odo.setPosition(new double [] {0.0, 0.0, (angleAvg + angleB - 90 + correctionAng)}, new boolean []{true, true, true});
+			}
 			
 			/**
 			 * turn robot to face along the Y-axis

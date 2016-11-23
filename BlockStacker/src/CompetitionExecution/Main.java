@@ -93,7 +93,7 @@ public class Main extends Thread{
 		 */
 		lcd.initLCD();
 		loc.localize();
-		loc.zeroRobot();
+//		loc.zeroRobot();
 		Sound.beepSequence();
 		
 		
