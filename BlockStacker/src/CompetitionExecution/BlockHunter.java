@@ -10,7 +10,7 @@ import lejos.utility.Delay;
 public class BlockHunter extends Thread{
 	
 	final static int ACCELERATION=4000, SPEED_NORMAL=200;
-	final static double TARGET_DISTANCE=12, OBJECT_DIS=40, BOARD_EDGE=62;
+	final static double TARGET_DISTANCE=10, OBJECT_DIS=40, BOARD_EDGE=62;
 	final static double FRONT_SIDE_ERR = 8, DETECTION_OFFSET= 4.3;
 	private Navigation nav;
 	private USPoller frontUS, leftUS, rightUS;
