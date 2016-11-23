@@ -18,7 +18,7 @@ import lejos.utility.Delay;
 public class Searching extends Thread{
 	
 	final static int OBJECT_DIS=40;
-	final static int TARGET_NUM = 3, FILTER_OUT = 20; 
+	final static int TARGET_NUM = 3, FILTER_OUT = 5; 
 	private Navigation nav;
 	private static USPoller frontUS, rightUS;
 	private boolean searchingDone;
@@ -50,12 +50,13 @@ public class Searching extends Thread{
 		
 		while(targets.size()<TARGET_NUM){			//store 3 target for each sweeping search 
 			targetFallingDis = frontUS.getFallingEdge(OBJECT_DIS, FILTER_OUT); //record the falling edge distance
+			Sound.beep();
 			targetFallingAngle = nav.odometer.getAng();		//record the falling edge angle
 			targetRisingDis =  frontUS.getRisingEdge(OBJECT_DIS, FILTER_OUT); //record the Rising edge distance
 			targetRisingAngle = nav.odometer.getAng();		//record the falling edge angle
 			// take the average of falling and rising edge distance and angle to store
 			targets.add(new double[] {(targetFallingDis+targetRisingDis)/2, (targetFallingAngle+targetRisingAngle)/2});
-			
+			Sound.beepSequence();
 			
 /*			Delay.msDelay(500);      //ensure robot to record the position of the center of target after a value returned 
 			targetFallingAngle = nav.odometer.getAng();		//record the angle;
@@ -82,7 +83,8 @@ public class Searching extends Thread{
 	 * @return x and y value of destination 
 	 */
 	private double[] getDest(double dis, double angle){
-		return new double[] {nav.odometer.getX()+dis*Math.cos(angle), nav.odometer.getY()+dis*Math.sin(angle)};
+		return new double[] {nav.odometer.getX()+dis*Math.cos(Math.toRadians(angle)), 
+				nav.odometer.getY()+dis*Math.sin(Math.toRadians(angle))};
 	}
 	
 	
