@@ -1,6 +1,7 @@
 package CompetitionExecution;
 
 
+import java.awt.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -71,25 +72,103 @@ public class Navigation extends Thread{
 	
 	
 	private ArrayList<Grid> calculatePath(Grid gridDest){
-		int index = 0;
-		ArrayList<Grid> prePath1 = this.getPath(gridDest);	//create two array for taking upper and lower detour respectively
-		ArrayList<Grid> prePath2 = this.getPath(gridDest);
-		for(Grid grid: prePath1){
+		boolean isBlocked = false;
+		ArrayList<Grid>	path = new ArrayList<Grid>();
+		ArrayList<Grid> upperPath = new ArrayList<Grid>(); 	//create two array for taking upper and lower detour respectively
+		ArrayList<Grid> lowerPath = new ArrayList<Grid>();
+		
+		for(Grid grid: getPath(gridDest)){
+			upperPath.add(grid);
+			lowerPath.add(grid);
+			path.add(grid);
+		}
+		int upperLength = path.size();
+		int lowerLength = path.size();
+		
+		int i = 0;
+		while(i<upperLength) {
+			upperLength = upperPath.size();
+			Grid grid = upperPath.get(i);
 			if(map.checkBlocked(grid)){
-				prePath1.remove(grid);
-				prePath2.remove(grid);
-				prePath1.addAll(index, map.getUpperDetour(grid));
-				prePath2.addAll(index, map.getLowerDetour(grid));
+				isBlocked=true;
+				upperPath.remove(i);
+				upperPath.addAll(i, getUpperDetour(grid, gridDest));
 			}
-			index++;
+			else {
+				i++;
+			}
 		}
-		map.revisePath(prePath1);
-		map.revisePath(prePath2);
-		if(prePath1.size()<prePath2.size()){	// if taking upper detour covers less grids then return it
-			return prePath1;
+		int j =0;
+		Sound.beep();
+		while(j<lowerLength) {
+			lowerLength = lowerPath.size();
+			Grid grid = lowerPath.get(j);
+			if(map.checkBlocked(grid)){
+				isBlocked=true;
+				lowerPath.remove(j);
+				lowerPath.addAll(j, getLowerDetour(grid, gridDest));
+			}
+			else {
+				j++;
+			}
+		}
+		Sound.beep();
+		if(!isBlocked) 
+			return path;
+		
+		map.revisePath(upperPath);
+		map.revisePath(lowerPath);
+		if(upperPath.size()<lowerPath.size()){	// if taking upper detour covers less grids then return it
+			return upperPath;
 		}else{									//otherwise return the lower detour
-			return prePath2;
+			return lowerPath;
 		}
+	}
+	
+	/**
+	 * This method return a collection of grids decting the upper detour around the grid 
+	 * @param gridBlocked
+	 * @return an arrayList of grid depicting a detour around the grid
+	 */
+	public ArrayList<Grid> getUpperDetour(Grid gridBlocked, Grid destGrid){
+		ArrayList<Grid> detourPath = new ArrayList<>();
+		if(gridBlocked.getGridX() == 0 || gridBlocked.getGridX() == 10 || gridBlocked.getGridY() == 0 || gridBlocked.getGridY() == 10) {
+			return detourPath;
+		}
+		
+		detourPath.add(map.getGrid(gridBlocked.getGridX() - 1, gridBlocked.getGridY()));
+		for (int i = 0; i < 3; i++) {
+			detourPath.add(map.getGrid(gridBlocked.getGridX() + (i - 1), gridBlocked.getGridY() + 1));
+			if(map.getGrid(gridBlocked.getGridX()+(i-1), gridBlocked.getGridY()+1).equals(destGrid))
+				return detourPath;
+		}
+		detourPath.add(map.getGrid(gridBlocked.getGridX() + 1, gridBlocked.getGridY()));
+		
+		return detourPath;
+	}
+	
+	
+	/**
+	 * This method return a collection of grids decting the lower detour around the grid 
+	 * @param gridBlocked
+	 * @return an arrayList of grid depicting a detour around the grid
+	 */
+	public ArrayList<Grid> getLowerDetour(Grid gridBlocked, Grid destGrid){
+		ArrayList<Grid> detourPath = new ArrayList<>();
+		
+		if(gridBlocked.getGridX() == 0 || gridBlocked.getGridX() == 10 || gridBlocked.getGridY() == 0 || gridBlocked.getGridY() == 10) {
+			return detourPath;
+		}
+		
+		detourPath.add(map.getGrid(gridBlocked.getGridX()-1, gridBlocked.getGridY()));
+		for(int i=0;i<3;i++){
+			
+			detourPath.add(map.getGrid(gridBlocked.getGridX()+(i-1), gridBlocked.getGridY()-1));
+			if(map.getGrid(gridBlocked.getGridX()+(i-1), gridBlocked.getGridY()-1).equals(destGrid))
+				return detourPath;
+		}
+		detourPath.add(map.getGrid(gridBlocked.getGridX()+1, gridBlocked.getGridY()));
+		return detourPath;
 	}
 		
 	
@@ -130,7 +209,7 @@ public class Navigation extends Thread{
 		
 		switch (determineDirection()) {
 		case UP:
-			while(currentGridY!=destGridY){
+			while(currentGridY!=destGridY ){
 				LCD.drawString("Up", 0, 2);
 				path.add(map.getGrid(currentGridX, ++currentGridY));		// add the grids to the path collection to constitute a path up
 			}
@@ -349,7 +428,7 @@ public class Navigation extends Thread{
 	 * @param destGrid
 	 */
 	public void travelByPath(Grid destGrid){
-		ArrayList<Grid> travelPath = getPath(destGrid);
+		ArrayList<Grid> travelPath = calculatePath(destGrid);
 		for(Grid grid: travelPath){
 			double[] dest = FieldMap.convertGridToPoint(grid.getGridX(),grid.getGridY());
 				travelTo(dest[0],dest[1]);
@@ -372,7 +451,7 @@ public class Navigation extends Thread{
 		desiredY = y;
 		
 		this.turnToDest(x, y);
-		Delay.msDelay(200);
+		Delay.msDelay(500);
 		// calculate distance to travel with given coordinates
 		distance = Math.sqrt(Math.pow(Math.abs(x - odometer.getX()), 2) + Math.pow(Math.abs(y - odometer.getY()), 2));   
 		
@@ -417,13 +496,20 @@ public class Navigation extends Thread{
 	 * @param x 
 	 * @param y
 	 */
+	private double minAng;
 	public synchronized void turnToDest(double x, double y){
-		double minAng = (Math.atan2(y - odometer.getY(), x - odometer.getX())) * (180.0 / Math.PI);
+		minAng = (Math.atan2(y - odometer.getY(), x - odometer.getX())) * (180.0 / Math.PI);
 		if (minAng < 0)
 			minAng += 360.0;
 		this.turnTo(minAng, true);
 	}
-	
+	/**
+	 * 
+	 * @return the angle the robot turns at every half
+	 */
+	public double getAngle(){
+		return this.minAng;
+	}
 	
 	
 	/**

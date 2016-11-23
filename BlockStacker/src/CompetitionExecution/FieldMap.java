@@ -22,7 +22,10 @@ public class FieldMap {
 	public FieldMap(){
 		for(int i=0; i<10; i++){
 			for(int j=0; j<10; j++){
-				fieldMap.add(new Grid(i,j));		// put 10*10 grids into the collection of grids
+				Grid grid = new Grid(i,j);
+				grid.setStatus(Status.CLEAR);
+				fieldMap.add(grid);		// put 10*10 grids into the collection of grids
+				
 			}
 		}
 	}
@@ -33,9 +36,8 @@ public class FieldMap {
 	 * @param pointY
 	 */
 	public void markBlocked(double pointX, double pointY){
-		this.getGrid(pointX, pointY).setStatus(Grid.Status.BLOCKED);
+		this.getGrid(pointX, pointY).setBlocked();
 	}
-	
 	
 	/**
 	 * This method will check if the grid which contains the point in coordinate system of odometer is blocked or not.
@@ -63,12 +65,10 @@ public class FieldMap {
 	 * @return boolean
 	 */
 	public boolean checkBlocked(Grid grid){
-		return this.checkBlocked(grid.getGridX(), grid.getGridY());
+		return grid.getStatus().equals(Grid.Status.BLOCKED);
 	}
 	
-	
-	
-	
+
 	/**
 	 * This method to get the grid object by the coordinate of odometer readings
 	 * @param pointX
@@ -130,38 +130,7 @@ public class FieldMap {
 		}
 		return largerZone;
 	}
-	
-	/**
-	 * This method return a collection of grids decting the upper detour around the grid 
-	 * @param grid
-	 * @return an arrayList of grid depicting a detour around the grid
-	 */
-	public ArrayList<Grid> getUpperDetour(Grid grid){
-		ArrayList<Grid> detourPath = new ArrayList<>();
-		detourPath.add(this.getGrid(grid.getGridX()-1, grid.getGridY()));
-		for(int i=0;i<3;i++){
-			detourPath.add(this.getGrid(grid.getGridX()+(i-1), grid.getGridY()+1));
-		}
-		detourPath.add(this.getGrid(grid.getGridX()+1, grid.getGridY()));
-		return detourPath;
-	}
-	
-	
-	/**
-	 * This method return a collection of grids decting the lower detour around the grid 
-	 * @param grid
-	 * @return an arrayList of grid depicting a detour around the grid
-	 */
-	public ArrayList<Grid> getLowerDetour(Grid grid){
-		ArrayList<Grid> detourPath = new ArrayList<>();
-		detourPath.add(this.getGrid(grid.getGridX()-1, grid.getGridY()));
-		for(int i=0;i<3;i++){
-			detourPath.add(this.getGrid(grid.getGridX()+(i-1), grid.getGridY()-1));
-		}
-		detourPath.add(this.getGrid(grid.getGridX()+1, grid.getGridY()));
-		return detourPath;
-	}
-	
+		
 	/**
 	 * This method removes all the repeated element grids in a path.
 	 * @param path 
@@ -231,6 +200,10 @@ class Grid {
 
 	public void setStatus(Status status) {
 		this.status = status;
+	}
+	
+	public void setBlocked(){
+		this.status = Status.BLOCKED;
 	}
 
 	public int[] getGridIndex() {
