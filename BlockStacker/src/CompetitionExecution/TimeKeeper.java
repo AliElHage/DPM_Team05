@@ -1,6 +1,7 @@
 package CompetitionExecution;
 
 /**
+ * This class should run throughout the competition to keep checking timeLeft and will drive robot home at the end of game
  * 
  * @author joey
  *
