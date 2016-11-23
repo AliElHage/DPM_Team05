@@ -146,7 +146,7 @@ public class Localization {
 				 * it is at in angleA, the first angle used for angular positioning
 				 */
 				while (true) {
-					if(rightUS.readUSDistance() <= threshDist){
+					if(leftUS.readUSDistance() <= threshDist){
 						Sound.beep();
 						leftMotor.stop();
 						rightMotor.stop();
@@ -171,7 +171,7 @@ public class Localization {
 				 * it is at in angleB, the second angle used for angular positioning
 				 */
 				while (true){
-					if(leftUS.readUSDistance() <= threshDist){
+					if(rightUS.readUSDistance() <= threshDist){
 						Sound.beep();
 						leftMotor.stop();
 						rightMotor.stop();
