@@ -6,12 +6,12 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 public class ClawHandler {
 	
 	final static int clawSpeed = 100;					// speed of clawMotor
-	final static int pulleySpeed = 75;					// speed of pulleyMotor
+	final static int pulleySpeed = 150;					// speed of pulleyMotor
 	final static double initialHeight =10.5;			// initial position of claws relative to the ground
 	final static double minDistanceFromGround = 2.2;	// minimum distance of claw relative to ground
 	final static double safeDropDistance = 4.5;			// amount to lower the claws to safely drop blocks on top of each other
 	final static double motorRadius = 0.7;				// distance between the middle of the motor and the peripheral holes
-	final static int clawOpenAngle = 50, minorOpenAngle = 60, clawCloseAngle = 65;
+	final static int clawOpenAngle = 50, clawCloseAngle = -10;
 	final static double offsetLift = 0.3; 
 	private double angleToRelease, angleToLift, angleToSet;	// amount by which to move the claws from their initial position for pulley	
 	private EV3LargeRegulatedMotor pulleyMotor, clawMotor;	// all claw-related motors
@@ -49,21 +49,15 @@ public class ClawHandler {
 	 * open the claw when it is fully closed
 	 */
 	public void open(){
-		clawMotor.rotate((int)clawOpenAngle, false);
-	}
-	
-	/**
-	 * open the claw when it is grasping an object
-	 */
-	public void minorOpen(){
-		clawMotor.rotate((int)minorOpenAngle, false);
+		clawMotor.rotateTo((int)clawOpenAngle, false);
 	}
 	
 	/**
 	 * close the claw
 	 */
 	public void close(){
-		clawMotor.rotate(-(int)clawCloseAngle, false);
+		clawMotor.rotateTo(clawCloseAngle, false);
+		
 	}
 	
 	/**
@@ -123,7 +117,7 @@ public class ClawHandler {
 		this.putDownToObj();
 		
 		// release block from claws and lower the claw to ground block level
-		this.minorOpen();
+		this.open();				///**************************
 		this.putDownToBot();
 		
 		// grab ground block
@@ -142,7 +136,7 @@ public class ClawHandler {
 		this.putDown();
 		
 		// release tower
-		this.minorOpen();
+		this.open();			//********************
 		this.counter = 0;
 		Sound.beep();
 		this.pullUp();

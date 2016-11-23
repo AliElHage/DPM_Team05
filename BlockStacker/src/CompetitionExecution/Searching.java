@@ -18,7 +18,7 @@ import lejos.utility.Delay;
 public class Searching extends Thread{
 	
 	final static int OBJECT_DIS=40;
-	final static int TARGET_NUM = 3, FILTER_OUT = 40; 
+	final static int TARGET_NUM = 3, FILTER_OUT = 5; 
 	private Navigation nav;
 	private static USPoller frontUS, rightUS;
 	private boolean searchingDone;
@@ -46,16 +46,24 @@ public class Searching extends Thread{
 	 * @return ArrayList<double []> contains x and y value of targets 
 	 */
 	public ArrayList<double []> trackingTargets(){
-		double targetDistance, targetAngle;
+		double targetFallingDis, targetFallingAngle, targetRisingDis, targetRisingAngle;
 		
 		while(targets.size()<TARGET_NUM){			//store 3 target for each sweeping search 
-			targetDistance = frontUS.getFilteredFallingEdge(OBJECT_DIS, FILTER_OUT);
-			Delay.msDelay(1200);      //ensure robot to record the position of the center of target after a value returned 
-			targetAngle = nav.odometer.getAng();		//record the angle;
-			targetDistance = frontUS.readUSDistance();   //update the distance
-			targets.add(new double[] {targetDistance, targetAngle});
+			targetFallingDis = frontUS.getFallingEdge(OBJECT_DIS, FILTER_OUT); //record the falling edge distance
 			Sound.beep();
-			Delay.msDelay(1500);	//ensure robot not to record the same target
+			targetFallingAngle = nav.odometer.getAng();		//record the falling edge angle
+			targetRisingDis =  frontUS.getRisingEdge(OBJECT_DIS, FILTER_OUT); //record the Rising edge distance
+			targetRisingAngle = nav.odometer.getAng();		//record the falling edge angle
+			// take the average of falling and rising edge distance and angle to store
+			targets.add(new double[] {(targetFallingDis+targetRisingDis)/2, (targetFallingAngle+targetRisingAngle)/2});
+			Sound.beepSequence();
+			
+/*			Delay.msDelay(500);      //ensure robot to record the position of the center of target after a value returned 
+			targetFallingAngle = nav.odometer.getAng();		//record the angle;
+			targetFallingDis = frontUS.readUSDistance();   //update the distance
+			targets.add(new double[] {targetFallingDis, targetFallingAngle});
+			Sound.beep();
+			Delay.msDelay(1500);	//ensure robot not to record the same target*/
 		}
 		return this.getDestSet(targets);		//convert the distance and angle to x and y of targets to return 
 	}
@@ -75,7 +83,8 @@ public class Searching extends Thread{
 	 * @return x and y value of destination 
 	 */
 	private double[] getDest(double dis, double angle){
-		return new double[] {nav.odometer.getX()+dis*Math.cos(angle), nav.odometer.getY()+dis*Math.sin(angle)};
+		return new double[] {nav.odometer.getX()+dis*Math.cos(Math.toRadians(angle)), 
+				nav.odometer.getY()+dis*Math.sin(Math.toRadians(angle))};
 	}
 	
 	

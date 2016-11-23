@@ -1,5 +1,7 @@
 package CompetitionExecution;
 
+import java.util.ArrayList;
+
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
@@ -68,14 +70,17 @@ public class Main extends Thread{
 		USPoller leftUS = new USPoller(usValueLeft, usDataLeft);
 		USPoller frontUS = new USPoller(usValueFront, usDataFront);
 		
+		lightSensor.start();
 		rightUS.start();
 		leftUS.start();
 		frontUS.start();
 		
+		
 		Odometer odo = new Odometer(leftMotor, rightMotor, 30, true);
 		Navigation nav = new Navigation(odo);
+		OdometryCorrection correction = new OdometryCorrection(nav, odo, lightSensor);
 		LCDInfo lcd = new LCDInfo(odo, frontUS, leftUS, rightUS);
-		Localization loc = new Localization(odo, rightUS, leftUS, lightSensor, leftMotor, rightMotor, nav);
+		Localization loc = new Localization(odo, rightUS, leftUS, frontUS, lightSensor, leftMotor, rightMotor, nav);
 		ClawHandler claw = new ClawHandler(clawMotor, pulleyMotor);
 		
 		Searching searching = new Searching(nav, frontUS, rightUS);
@@ -86,30 +91,30 @@ public class Main extends Thread{
 		/**
 		 * Localize robot
 		 */
-		/*lcd.initLCD();
+		lcd.initLCD();
 		loc.localize();
 		loc.zeroRobot();
-		Sound.beepSequence();*/
+		Sound.beepSequence();
 		
 		
-		//TEST NAVIGATION
-		FieldMap map = nav.getFieldMap();
-		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});  // reset odometer if skipping localization
+	
 		
-		
+		//TEST TRAVELING
 		 /************************************************************
 		 *	consider 0,0 as localization point
 		 *In each case robot will have the following waypoint on 4*4 grid
 		 *		travels to 45,75 (Grid 1,2)
 		 *		then return to 15,15 (Grid 0,0)
 		 ************************************************************/
-		 
+
+	/*	FieldMap map = nav.getFieldMap();
+		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});  // reset odometer if skipping localization 
 
 		//Case 1: test up/right/down/left convention
 		//START ROBOT AT BOTTOM LEFT FACING RIGHT
 		
 		//make sure always traveling in right angles
-	/*	nav.travelByPath(new Grid(0,2));
+		nav.travelByPath(new Grid(0,2));
 		Sound.beep();
 		nav.travelByPath(new Grid(1,2));
 		Sound.beep();
@@ -130,9 +135,18 @@ public class Main extends Thread{
 		*/
 		
 		//TEST SEARCHING
-		searching.start();
-		searching.trackingTargets();
+	/*	searching.start();
+		ArrayList<double[]> targets = searching.trackingTargets();
 		searching.stopSearching();
+		for(double[] target: targets){
+			nav.turnToDest(target[0], target[1]);
+			blockHunter.approachTo();
+			if(blockHunter.isObstacle()){
+				Sound.beepSequence();
+			}else{
+				Sound.beep();
+			}
+		}*/
 		
 
 		
@@ -147,7 +161,13 @@ public class Main extends Thread{
 		
 		//TEST CLAW
 		//testing basic functions claw
-		/*claw.putDown();
+	/*	claw.open();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.close();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.open();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.putDown();
 		while (Button.waitForAnyPress() != Button.ID_RIGHT);
 		claw.pullUp();
 		while (Button.waitForAnyPress() != Button.ID_RIGHT);
@@ -163,7 +183,7 @@ public class Main extends Thread{
 		
 		
 		//testing stacking foams
-	/*	claw.grasp();
+		/*claw.grasp();
 		while (Button.waitForAnyPress() != Button.ID_RIGHT);
 		claw.grasp();
 		while (Button.waitForAnyPress() != Button.ID_RIGHT);
@@ -174,12 +194,25 @@ public class Main extends Thread{
 		
 		
 		//TEST OBJECT DETECTION 
-		/*blockHunter.approachTo();
-		if(blockHunter.isObstacle()){
-			Sound.beepSequence();
-		}else{
-			Sound.beep();
+		/*while(true){
+			while (Button.waitForAnyPress() != Button.ID_RIGHT);
+			blockHunter.approachTo();
+			if(blockHunter.isObstacle()){
+				Sound.beepSequence();
+			}else{
+				Sound.beep();
+			}
 		}*/
+		
+		
+		
+		//TEST CORRECTION
+		/*correction.start();
+		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});
+		nav.travelTo(90, 0);
+		nav.travelTo(0, 0);*/
+		
+		
 		
 		
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);

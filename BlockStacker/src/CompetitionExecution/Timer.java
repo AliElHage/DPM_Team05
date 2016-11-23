@@ -22,7 +22,7 @@ public final class Timer {
 	}
 	
 	/**
-	 * This method return the time left
+	 * This method return the time left in seconds
 	 * @return time left in seconds
 	 */
 	public static long timeLeft(){

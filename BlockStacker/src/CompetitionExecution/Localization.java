@@ -24,7 +24,7 @@ public class Localization {
 	/**
 	 * ultrasonic sensor localization specific variables
 	 */
-	private USPoller rightUS, leftUS;
+	private USPoller rightUS, leftUS, frontUS;
 	private int threshDist = 20;
 	
 	/**
@@ -47,12 +47,13 @@ public class Localization {
 	 * @param rightMotor right motor used to physically move robot
 	 * @param navigator same navigator to be used for moving robot in localize() and zeroRobot() methods
 	 */
-	public Localization(Odometer odo,  USPoller rightUS, USPoller leftUS, 
+	public Localization(Odometer odo,  USPoller rightUS, USPoller leftUS, USPoller frontUS,
 			LightPoller lightSensor, EV3LargeRegulatedMotor leftMotor, 
 			EV3LargeRegulatedMotor rightMotor, Navigation navigator) {
 		this.odo = odo;
 		this.rightUS = rightUS;
 		this.leftUS = leftUS;
+		this.frontUS = frontUS;
 		this.lightSensor = lightSensor;
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
@@ -69,68 +70,116 @@ public class Localization {
 		leftMotor.setSpeed(ROTATION_SPEED);
 		rightMotor.setSpeed(ROTATION_SPEED);
 			
-//			/** 
-//			 * if the robot starts facing a wall, turn it 180 degrees so it has passed
-//			 * the appointed threshold distance, then start rising edge procedure
-//			 */
-//			if (getFilteredData1() <= threshDist || getFilteredData2() <= threshDist) {
-//				leftMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 180), true);
-//				rightMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 180), false);
-//			
-//			}
+			/** 
+			 * if the robot starts facing a wall, turn it 180 degrees so it has passed
+			 * the appointed threshold distance, then start rising edge procedure
+			 */
+			if (frontUS.readUSDistance() <= threshDist) {
+				leftMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 180), true);
+				rightMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 180), false);
+			
+			}
 			
 			/**
-			 * start rising edge procedure by turning robot
+			 * start turning in direction in which side sensor is farther from the wall
 			 */
-			leftMotor.forward();
-			rightMotor.backward();
-			
-			/** 
-			 * continuously check left sensor for a wall while turning, if 
-			 * one is found, beep, then stop the robot and record the angle 
-			 * it is at in angleA, the first angle used for angular 
-			 * positioning, then continue the procedure
-			 */
-			while (true) {
-				if(rightUS.readUSDistance() <= threshDist){
-					Sound.beep();
-					leftMotor.stop();
-					rightMotor.stop();
-					if(odo.getAng() < 270) {
-						angleA = 270 + odo.getAng();
-					} else {
-						angleA = odo.getAng() - 90;
+			if(rightUS.readUSDistance() > leftUS.readUSDistance()) {
+				
+				/**
+				 * start rising edge procedure by turning robot
+				 */
+				leftMotor.forward();
+				rightMotor.backward();
+				
+				/** 
+				 * continuously check left sensor for a wall while turning, if 
+				 * one is found, beep, then stop the robot and record the angle 
+				 * it is at in angleA, the first angle used for angular 
+				 * positioning, then continue the procedure
+				 */
+				while (true) {
+					if(rightUS.readUSDistance() <= threshDist){
+						Sound.beep();
+						leftMotor.stop();
+						rightMotor.stop();
+						if(odo.getAng() < 270) {
+							angleA = 270 + odo.getAng();
+						} else {
+							angleA = odo.getAng() - 90;
+						}
+						break;
 					}
-					break;
+				}
+	
+				/**
+				 * start normal turning clockwise
+				 */
+				rightMotor.forward();
+				leftMotor.backward();
+				
+				/** 
+				 * continuously check right sensor for a wall while turning, if 
+				 * one is found, beep, then stop the robot and record the angle 
+				 * it is at in angleB, the second angle used for angular positioning
+				 */
+				while (true){
+					if(leftUS.readUSDistance() <= threshDist){
+						Sound.beep();
+						leftMotor.stop();
+						rightMotor.stop();
+						angleB = 90 + odo.getAng();
+						break;
+					}
+				}
+				
+			} else {
+				
+				/**
+				 * start rising edge procedure by turning robot
+				 */
+				rightMotor.forward();
+				leftMotor.backward();
+				
+				/** 
+				 * continuously check right sensor for a wall while turning, if 
+				 * one is found, beep, then stop the robot and record the angle 
+				 * it is at in angleA, the first angle used for angular positioning
+				 */
+				while (true) {
+					if(leftUS.readUSDistance() <= threshDist){
+						Sound.beep();
+						leftMotor.stop();
+						rightMotor.stop();
+						if(odo.getAng() < 270) {
+							angleA = 270 + odo.getAng();
+						} else {
+							angleA = odo.getAng() - 90;
+						}
+						break;
+					}
+				}
+				
+				/**
+				 * start normal turning couterclockwise 
+				 */
+				leftMotor.forward();
+				rightMotor.backward();
+				
+				/** 
+				 * continuously check left sensor for a wall while turning, if 
+				 * one is found, beep, then stop the robot and record the angle 
+				 * it is at in angleB, the second angle used for angular positioning
+				 */
+				while (true){
+					if(rightUS.readUSDistance() <= threshDist){
+						Sound.beep();
+						leftMotor.stop();
+						rightMotor.stop();
+						angleB = 90 + odo.getAng();
+						break;
+					}
 				}
 			}
-			
-			LCD.drawString("AngleA: " + angleA, 0, 0);
-			LCD.drawString("OdometerA: " + odo.getAng(), 0, 1);
-
-			/**
-			 * start normal turning clockwise
-			 */
-			rightMotor.forward();
-			leftMotor.backward();
-			
-			/** 
-			 * continuously check right sensor for a wall while turning, if 
-			 * one is found, beep, then stop the robot and record the angle 
-			 * it is at in angleB, the second angle used for angular positioning
-			 */
-			while (true){
-				if(leftUS.readUSDistance() <= threshDist){
-					Sound.beep();
-					leftMotor.stop();
-					rightMotor.stop();
-					angleB = 90 + odo.getAng();
-					break;
-				}
-			}
-			
-			LCD.drawString("AngleB: " + angleB, 0, 2);
-			LCD.drawString("OdometerB: " + odo.getAng(), 0, 3);
 			
 			/**
 			 * calculations for average angle based on formulas given in slides
@@ -306,6 +355,20 @@ public class Localization {
 		}
 		
 		
+	}
+	
+	/**
+	 * methods originally from SquareDriver class in Lab2
+	 * @param radius
+	 * @param width
+	 * @param angle
+	 * @return
+	 */
+	private static int convertAngle(double radius, double width, double angle) {
+		return convertDistance(radius, Math.PI * width * angle / 360.0);
+	}
+	private static int convertDistance(double radius, double distance) {
+		return (int) ((180.0 * distance) / (Math.PI * radius));
 	}
 
 }

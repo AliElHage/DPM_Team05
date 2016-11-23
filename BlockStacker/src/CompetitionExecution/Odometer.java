@@ -183,4 +183,22 @@ public class Odometer implements TimerListener {
 		else
 			return d - 360.0;
 	}
+	
+	public void setX(double newX){
+        synchronized (this){
+            x = newX;
+        }
+    }
+    
+    public void setY(double newY){
+            synchronized (this){
+                y = newY;
+            }
+        }
+    
+    public void setTheta(double newTheta){
+        synchronized (this){
+            theta = newTheta;
+        }
+    }
 }
