@@ -321,9 +321,14 @@ public class Navigation extends Thread{
 		this.travelTo(dest[0],dest[1]);
 	}
 	
+	/**
+	 * This method will drive robot to scout along the a collection of grids which depict a closed path
+	 * robot will move the next two grid on the closed path evertime this method is called
+	 * @param border a collection of grids depicting a border of a zone
+	 */
 	public synchronized void scoutZone(ArrayList<Grid> border){
 		int index = 0;			//index to keep track of current position on the border 
-		int[] currentGrid = FieldMap.convertPointToGrid(odometer.getX(), odometer.getY());
+		Grid currentGrid = map.getGrid(odometer.getX(), odometer.getY());
 		for(Grid grid: border){
 			if(grid.equals(currentGrid)){
 				this.travelByPath(border.get( (index+2) % border.size())); 	//travel to next spot to continue scouting
@@ -640,6 +645,13 @@ public class Navigation extends Thread{
 
 	public double getDesiredY() {
 		return desiredY;
+	}
+	
+	public double getDesiredAngle(){
+		double minAng = (Math.atan2(desiredY - odometer.getY(), desiredX - odometer.getX())) * (180.0 / Math.PI);
+		if (minAng < 0)
+			minAng += 360.0;
+		return minAng;
 	}
 	
 	
