@@ -15,7 +15,7 @@ import CompetitionExecution.Grid.Status;
  */
 public class FieldMap {
 	
-	final static double GRID_LENGTH=30.48;
+	final static double GRID_LENGTH=30.1;
 
 	public static List<Grid> fieldMap = new ArrayList<>(); 
 	
