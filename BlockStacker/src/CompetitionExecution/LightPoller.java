@@ -22,7 +22,7 @@ public class LightPoller extends Thread{
 	public void run(){
 		while(true){
 			colorSensor.fetchSample(colorData,0);
-			colorReading = (int)(colorData[0] *100.0); 
+			colorReading = (int)(colorData[2] *100.0); 
 		}
 	}
 	
@@ -51,7 +51,9 @@ public class LightPoller extends Thread{
 	 * returns a boolean true if it does cross a line.
 	 */
 	public boolean lineCrossed(){
-		if(colorReading < 30){
+		colorSensor.fetchSample(colorData, 0);
+		
+		if(colorData[0] < 0.30){
 			return true;
 		}
 		else{

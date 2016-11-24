@@ -91,10 +91,10 @@ public class Main extends Thread{
 		/**
 		 * Localize robot
 		 */
-	/*	lcd.initLCD();
+		lcd.initLCD();
 		loc.localize();
 		loc.zeroRobot();
-		Sound.beepSequence();*/
+		Sound.beepSequence();
 		
 		
 	
@@ -183,18 +183,18 @@ public class Main extends Thread{
 		
 		
 		//testing stacking foams
-		claw.grasp();
+		/*claw.grasp();
 		while (Button.waitForAnyPress() != Button.ID_RIGHT);
 		claw.grasp();
 		while (Button.waitForAnyPress() != Button.ID_RIGHT);
 		claw.grasp();
 		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		claw.releaseTower();
+		claw.releaseTower();*/
 		
 		
 		
 		//TEST OBJECT DETECTION 
-	/*	while(true){
+		/*while(true){
 			while (Button.waitForAnyPress() != Button.ID_RIGHT);
 			blockHunter.approachTo();
 			if(blockHunter.isObstacle()){
@@ -215,8 +215,8 @@ public class Main extends Thread{
 		
 		
 		
-		/*while (Button.waitForAnyPress() != Button.ID_ESCAPE);
-		System.exit(0);*/
+		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
+		System.exit(0);
 		
 	}
 }

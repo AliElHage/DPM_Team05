@@ -22,7 +22,7 @@ public class BorderMonitor extends Thread{
 		while(!isDone){
 			if(nav.odometer.getX() < 0 || nav.odometer.getX() > 300 || 
 					nav.odometer.getY() < 0 || nav.odometer.getY() > 300){
-				nav.interruptTraveling();				///add in more action later *****************************************888
+				nav.interruptTraveling();
 			}
 		}
 	}
