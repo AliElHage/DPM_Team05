@@ -98,6 +98,7 @@ public class FieldMap {
 	
 	/**
 	 * This method return a collection of grids as zone by passing the lower left and upper right gridINDEX
+	 * only for the designated zone only 
 	 * @param LZx lower left x
 	 * @param LZy lower left y
 	 * @param UZx upper right x
@@ -105,9 +106,11 @@ public class FieldMap {
 	 * @return a collection of grids which depict a zone 
 	 */
 	public ArrayList<Grid> getZone(int LZx, int LZy, int UZx, int UZy){
+		/*UZx--;
+		UZy--;  //fixed passed parameter to fix the map GridIndex*/
 		ArrayList<Grid> zone = new ArrayList<>();
-		for(int i=LZx;i<(UZx+1);i++){
-			for(int y=LZy;y<(UZy+1);y++){
+		for(int i=LZx;i<UZx;i++){
+			for(int y=LZy;y<UZy;y++){
 				zone.add(this.getGrid(i, y));
 			}
 		}
@@ -142,8 +145,68 @@ public class FieldMap {
 		for(Grid grid:zone){
 			largerZone.remove(grid);
 		}
-		return largerZone;
+		return this.fixBorder(largerZone);
 	}
+	
+	/**
+	 * helper method for getBorder to put grids comprise the border in a continous order
+	 * @param border
+	 * @return organized border
+	 */
+	private  ArrayList<Grid> fixBorder(ArrayList<Grid> border){
+		ArrayList<Grid> newBorder = new ArrayList<>();
+		newBorder.add(border.get(0));
+		int index=0;
+		int size = border.size();
+		while(newBorder.size()!=size){
+			for(Grid grid: border){
+				if(this.isNexTo(newBorder.get(index),grid)){
+					newBorder.add(grid);
+					border.remove(grid);
+					index++;
+					break;
+				}
+			}
+		}
+		return newBorder;
+	}
+	
+	
+	/**
+	 * This method checks if grids in a collection is continuous to depict a continuous path
+	 * @param grids
+	 * @return boolean
+	 */
+	public boolean isContinuous(ArrayList<Grid> grids){
+		int index = 0;
+		//iterate through the collection and return false if either x or y doesn't vary by 1 compared to the adjacent
+		for(Grid grid:grids){
+			if(!this.isNexTo(grid, grids.get(++index%grids.size()))){
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	/**
+	 * This method checks if two grids are next to each other
+	 * @param grid1
+	 * @param grid2
+	 * @return boolean 
+	 */
+	private boolean isNexTo(Grid grid1, Grid grid2){
+		if(Math.abs(grid1.getGridX() - grid2.getGridX())!=1 &&
+				Math.abs(grid1.getGridY() - grid2.getGridY())!=1){
+			return false;		//return false if both grid y and x vary not 1
+		}else if(Math.abs(grid1.getGridX() - grid2.getGridX())==1 &&
+				Math.abs(grid1.getGridY() - grid2.getGridY())==1){
+			return false;		//return false if both grid y and x vary 1
+		}else if(grid1.equals(grid2)){
+			return false;		//return false if grids are the same object
+		}
+		return true;
+	}
+	
 		
 	/**
 	 * This method removes all the repeated element grids in a path.

@@ -6,44 +6,38 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 public class ClawHandler {
 	
 	final static int clawSpeed = 100;					// speed of clawMotor
-	final static int pulleySpeed = 150;					// speed of pulleyMotor
-	final static double initialHeight =10.5;			// initial position of claws relative to the ground
+	final static int pulleySpeed = 300;					// speed of pulleyMotor
+	final static double initialHeight =16.7;			// initial position of claws relative to the ground
 	final static double minDistanceFromGround = 2.2;	// minimum distance of claw relative to ground
-	final static double safeDropDistance = 4.5;			// amount to lower the claws to safely drop blocks on top of each other
+	final static double safeDropDistance = 10.8;			// amount to lower the claws to safely drop blocks on top of each other
 	final static double motorRadius = 0.7;				// distance between the middle of the motor and the peripheral holes
-	final static int clawOpenAngle = 50, clawCloseAngle = -10;
+	final static int clawOpenAngle = 50, clawCloseAngle = -10, clawSemiOpenAngle = 25;
+	final static int clawAdjustingAngle = 10, graspOffsetDis = 2;
 	final static double offsetLift = 0.3; 
-	private double angleToRelease, angleToLift, angleToSet;	// amount by which to move the claws from their initial position for pulley	
+	private Navigation nav;
+	private double angleToRelease, angleToLift, angleToSet, angleToGrasp;	// amount by which to move the claws from their initial position for pulley	
 	private EV3LargeRegulatedMotor pulleyMotor, clawMotor;	// all claw-related motors
 	private int counter;									// counts the amount of blocks stacked
-	private static boolean isInitialized = false;			// true if claw has been initialized
 	
 	// NB FOR PULLEYSPEED: a negative speed is for lowering the claw; positive otherwise
 	// NB FOR CLAWSOPENANGLE: a negative angle is for grabbing; releasing otherwise
 	
 	/** Constructor. */
-	public ClawHandler(EV3LargeRegulatedMotor clawMotor, EV3LargeRegulatedMotor pulleyMotor){
+	public ClawHandler(EV3LargeRegulatedMotor clawMotor, EV3LargeRegulatedMotor pulleyMotor, Navigation nav){
 		this.clawMotor = clawMotor;
 		this.pulleyMotor = pulleyMotor;
 		this.counter=0;
+		this.nav = nav;
 		this.angleToRelease = this.computePulleyTurnAngle(initialHeight -minDistanceFromGround);
 		this.angleToLift = this.computePulleyTurnAngle(initialHeight - minDistanceFromGround + offsetLift);
 		this.angleToSet = this.computePulleyTurnAngle(safeDropDistance);
+		this.angleToGrasp = this.computePulleyTurnAngle(graspOffsetDis);
 		this.pulleyMotor.setSpeed(pulleySpeed);
 		this.clawMotor.setSpeed(clawSpeed);
+		this.pulleyMotor.rotate(-1, true);
+		this.open();
 	}
-	
-	/** Initializes the claws. First method that should be called when using the claws. To be used
-	 *  effectively, the claws should start at the top and be in a closed position,*/
-	public void initializeClaw(){
-		
-		double angle;											// angle needed to lower claw to ground
-		
-		// set negative speed to lower the claw
-		pulleyMotor.setSpeed(-pulleySpeed);
-		
-		isInitialized = true;
-	}
+
 	
 	/**
 	 * open the claw when it is fully closed
@@ -56,8 +50,14 @@ public class ClawHandler {
 	 * close the claw
 	 */
 	public void close(){
-		clawMotor.rotateTo(clawCloseAngle, false);
-		
+		clawMotor.rotateTo(clawCloseAngle, false);	
+	}
+	
+	/**
+	 * semi-open the claw for adjusting foam block position  
+	 */
+	public void semiOpen(){
+		clawMotor.rotateTo(clawSemiOpenAngle, false);	
 	}
 	
 	/**
@@ -73,6 +73,7 @@ public class ClawHandler {
 	public void putDownToObj(){
 		pulleyMotor.rotate((int)angleToSet, false);
 	}
+	
 	
 	/**
 	 * release the pulley down to bottom from the height of the foam block 
@@ -96,14 +97,12 @@ public class ClawHandler {
 		
 		// if the robot holds no block
 		if(counter == 0){
-			//open the claw
-			this.open();
 			
 			//release the claw down
 			this.putDown();
 			
-			// grab block
-			this.close();
+			// adjust the foam block position and grasp the block
+			this.fixAndGrasp();
 			
 			// lifts the block up
 			this.pullUp();
@@ -121,7 +120,7 @@ public class ClawHandler {
 		this.putDownToBot();
 		
 		// grab ground block
-		this.close();
+		this.fixAndGrasp();
 		
 		// lift blocks up
 		this.pullUp();
@@ -136,7 +135,7 @@ public class ClawHandler {
 		this.putDown();
 		
 		// release tower
-		this.open();			//********************
+		this.open();			//********************!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		this.counter = 0;
 		Sound.beep();
 		this.pullUp();
@@ -154,6 +153,20 @@ public class ClawHandler {
 		
 		return angle;
 	}
+	
+	/**
+	 * fix position of foam block and grasp it 
+	 */
+	public void fixAndGrasp(){
+		this.close();
+		this.semiOpen();
+		for(int i=0;i<3;i++){
+			nav.turn(-clawAdjustingAngle);
+			nav.turn(clawAdjustingAngle);
+		}
+		nav.goForward(graspOffsetDis);
+		this.close();
+	} 
 	
 	
 	/** Gets the amount of blocks held by the robot. */

@@ -29,13 +29,14 @@ public class Navigation extends Thread{
 	enum Direction {LEFT,RIGHT,UP,DOWN,UPLEFT,UPRIGHT,DOWNLEFT,DOWNRIGHT}
 	
 	static final int TURN_SPEED = 150;
-	final static int FAST = 200, SLOW = 150, SACNNNG_SPEED = 60, ACCELERATION = 4000;    //SLOW =60  FAST =175
+	final static int FAST = 200, SLOW = 150, SACNNNG_SPEED = 45, ACCELERATION = 4000;    //SLOW =60  FAST =175
 	public Odometer odometer;
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
 	private double desiredX, desiredY;
 	private int destGridX, destGridY, currentGridX, currentGridY;
 	private boolean interrupted, isTraveling;
 	public FieldMap map; 
+	public ArrayList<Grid> zoneDesignated;
 	final static double DEG_ERR = 1.0, CM_ERR = 1.0;
 
 	public Navigation(Odometer odo) {
@@ -46,10 +47,19 @@ public class Navigation extends Thread{
 		EV3LargeRegulatedMotor[] motors = this.odometer.getMotors();
 		this.leftMotor = motors[0];
 		this.rightMotor = motors[1];
-
+		
 		// set acceleration
 		this.leftMotor.setAcceleration(ACCELERATION);
 		this.rightMotor.setAcceleration(ACCELERATION);
+		
+	/*	//set up the map conditions
+		if(Main.isBuilder){			//if role is builder
+			this.zoneDesignated = map.getZone(Main.LGZx, Main.LGZy, Main.UGZx, Main.UGZy);
+			map.zoneBlocked(Main.LRZx, Main.LRZy, Main.URZx, Main.URZy);	// block the red zone area
+		}else{						// if role is garbage collector
+			this.zoneDesignated = map.getZone(Main.LRZx, Main.LRZy, Main.URZx, Main.URZy);
+			map.zoneBlocked(Main.LGZx, Main.LGZy, Main.UGZx, Main.UGZy);	// block the green zone area 
+		}*/
 	}
 	
 	public void run(){
@@ -727,6 +737,10 @@ public class Navigation extends Thread{
 	public void resumeTraveling(){
 		this.interrupted = false;
 		(new Thread(this)).start();	//start a thread to drive robot to destination
+	}
+	
+	public void goZoneDesignated(){
+		
 	}
 	
 	/**

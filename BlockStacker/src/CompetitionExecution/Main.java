@@ -32,7 +32,7 @@ public class Main extends Thread{
 	private static final Port usPortFront = LocalEV3.get().getPort("S3");			//S3 front US
 	private static final Port colorPort = LocalEV3.get().getPort("S4");
 	public static int BTN, BSC, CTN, CSC, LRZx, LRZy, URZx, URZy, LGZx, LGZy, UGZx, UGZy;
-	private static boolean isBuilder;
+	public static boolean isBuilder;
 	
 	public static void main(String[] args) {
 		/**
@@ -41,6 +41,14 @@ public class Main extends Thread{
 		ParameterInterpretation parInt = new ParameterInterpretation();
 		//parInt.interpret();
 		
+		/**
+		 * Assign team role 
+		 */
+		/*if(BTN==TEAM_NUM){
+			isBuilder = true;
+		}else{
+			isBuilder = false;
+		}*/
 		
 		/**
 		 * US declarations
@@ -81,8 +89,7 @@ public class Main extends Thread{
 		OdometryCorrection correction = new OdometryCorrection(nav, odo, lightSensor);
 		LCDInfo lcd = new LCDInfo(odo, frontUS, leftUS, rightUS);
 		Localization loc = new Localization(odo, rightUS, leftUS, frontUS, lightSensor, leftMotor, rightMotor, nav);
-		ClawHandler claw = new ClawHandler(clawMotor, pulleyMotor);
-		
+		ClawHandler claw = new ClawHandler(clawMotor, pulleyMotor, nav);
 		Searching searching = new Searching(nav, frontUS, rightUS);
 		BlockHunter blockHunter = new BlockHunter(nav, frontUS, leftUS, rightUS, claw);
 		
@@ -92,9 +99,9 @@ public class Main extends Thread{
 		 * Localize robot
 		 */
 		lcd.initLCD();
-		loc.localize();
+	/*	loc.localize();
 //		loc.zeroRobot();
-		Sound.beepSequence();
+		Sound.beepSequence();*/
 		
 		
 	
@@ -135,7 +142,8 @@ public class Main extends Thread{
 		*/
 		
 		//TEST SEARCHING
-	/*	searching.start();
+
+		/*searching.start();
 		ArrayList<double[]> targets = searching.trackingTargets();
 		searching.stopSearching();
 		for(double[] target: targets){
@@ -183,7 +191,7 @@ public class Main extends Thread{
 		
 		
 		//testing stacking foams
-		/*claw.grasp();
+	/*	claw.grasp();
 		while (Button.waitForAnyPress() != Button.ID_RIGHT);
 		claw.grasp();
 		while (Button.waitForAnyPress() != Button.ID_RIGHT);
@@ -191,10 +199,17 @@ public class Main extends Thread{
 		while (Button.waitForAnyPress() != Button.ID_RIGHT);
 		claw.releaseTower();*/
 		
+		//TEST FOAM POSITION FIX WITH CLAW 
+/*		claw.open();
+		claw.putDown();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.fixAndGrasp();
+		claw.pullUp();*/
+		
 		
 		
 		//TEST OBJECT DETECTION 
-		/*while(true){
+		while(true){
 			while (Button.waitForAnyPress() != Button.ID_RIGHT);
 			blockHunter.approachTo();
 			if(blockHunter.isObstacle()){
@@ -202,7 +217,7 @@ public class Main extends Thread{
 			}else{
 				Sound.beep();
 			}
-		}*/
+		}
 		
 		
 		
@@ -215,8 +230,8 @@ public class Main extends Thread{
 		
 		
 		
-		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
-		System.exit(0);
+		/*while (Button.waitForAnyPress() != Button.ID_ESCAPE);
+		System.exit(0);*/
 		
 	}
 }

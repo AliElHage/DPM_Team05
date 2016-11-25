@@ -18,7 +18,7 @@ import lejos.utility.Delay;
 public class Searching extends Thread{
 	
 	final static int OBJECT_DIS=40;
-	final static int TARGET_NUM = 3, FILTER_OUT = 5; 
+	final static int TARGET_NUM = 3, FILTER_OUT = 3; 
 	private Navigation nav;
 	private static USPoller frontUS, rightUS;
 	private boolean searchingDone;
@@ -69,6 +69,9 @@ public class Searching extends Thread{
 	}
 	
 	
+	/**
+	 * stop the searching thread 
+	 */
 	public void stopSearching(){
 		this.searchingDone = true;
 		Delay.msDelay(100);
@@ -93,7 +96,7 @@ public class Searching extends Thread{
 	 * @param targets includes distance and angles to each target
 	 * @return ArrayList<double[]> contains x and y value of the target 
 	 */
-	private ArrayList<double[]> getDestSet(ArrayList<double[]> targets){			//*******************bug here************/
+	private ArrayList<double[]> getDestSet(ArrayList<double[]> targets){			
 		ArrayList<double[]> dests = new ArrayList<>();
 		for(double[] target:targets){
 			dests.add(getDest(target[0], target[1]));

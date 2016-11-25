@@ -10,8 +10,8 @@ import lejos.utility.Delay;
 public class BlockHunter extends Thread{
 	
 	final static int ACCELERATION=4000, SPEED_NORMAL=200;
-	final static double TARGET_DISTANCE=10, OBJECT_DIS=40, BOARD_EDGE=62;
-	final static double FRONT_SIDE_ERR = 8, DETECTION_OFFSET= 4.3;
+	final static double TARGET_DISTANCE=12.5, OBJECT_DIS=40;
+	final static double  DETECTION_OFFSET= 4.3;
 	private Navigation nav;
 	private USPoller frontUS, leftUS, rightUS;
 	private ClawHandler claw; 
@@ -144,15 +144,13 @@ public class BlockHunter extends Thread{
 	 * @return boolean
 	 */
 	public boolean isObstacle(){
-		Delay.msDelay(100); 	// wait 100ms to set up US Sensor 
-		double lowerFront = frontUS.readUSDistance();
 		nav.turn(-90);     		// rotate the robot to check the object by right side US sensor
 		nav.goBackward(DETECTION_OFFSET);//let robot move backward a bit to ensure robot to detect the same spot as front
 		Delay.msDelay(100); 	// wait 100ms to set up US Sensor 
-		double higherRight = rightUS.readUSDistance();
-		return Math.abs(lowerFront-higherRight) < FRONT_SIDE_ERR; // return object is an obstacle if the difference if within error 
+		return rightUS.readUSDistance() <= TARGET_DISTANCE; // return object is an obstacle if the reading less than target distance 
 	}
 	
+
 	
 	
 	public boolean obstacleTesting(){

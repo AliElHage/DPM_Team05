@@ -83,7 +83,7 @@ public class USPoller extends Thread{
 				// when robot keep getting the cut off value below the threshold, then return the distance 
 				return distance;
 			}
-			Delay.msDelay(50);     // keep checking frequency low to the peace of sampling frequency 20Hz
+			Delay.msDelay(50);     // keep checking frequency low to the pace of sampling frequency 20Hz
 		}
 	}
 	
@@ -115,7 +115,7 @@ public class USPoller extends Thread{
 				filterControlHigh = 0;
 				filterControlLow = 0;
 			}
-			Delay.msDelay(50);     // keep checking frequency low to the peace of sampling frequency 20Hz
+			Delay.msDelay(50);     // keep checking frequency low to the pace of sampling frequency 20Hz
 		}
 	}
 	
