@@ -44,7 +44,7 @@ public class OdometryCorrection extends Thread{
 					// fetch arguments of travel function
 					xDestination = nav.getDesiredX();
 					yDestination = nav.getDesiredY();
-					angle = nav.getDesiredAngle();	// create in Navigation class
+					angle = nav.getAngle();	// create in Navigation class
 					
 					// get initial tacho count
 					leftInitialTacho = odometer.getLeftMotor().getTachoCount();

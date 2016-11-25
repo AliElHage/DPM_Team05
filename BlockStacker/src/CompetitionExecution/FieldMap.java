@@ -15,7 +15,7 @@ import CompetitionExecution.Grid.Status;
  */
 public class FieldMap {
 	
-	final static double GRID_LENGTH=30.48;
+	final static double GRID_LENGTH=30.1;
 
 	public static List<Grid> fieldMap = new ArrayList<>(); 
 	
@@ -112,6 +112,20 @@ public class FieldMap {
 			}
 		}
 		return zone;
+	}
+	
+	/**
+	 * The method marked all the grids in the designated zone as blocked by passing the lower left and upper right gridINDEX 
+	 * @param LZx lower left x
+	 * @param LZy lower left y
+	 * @param UZx upper right x
+	 * @param UZy upper right y
+	 */
+	public void zoneBlocked(int LZx, int LZy, int UZx, int UZy){
+		ArrayList<Grid> zone = this.getZone(LZx, LZy, UZx, UZy);
+		for(Grid grid: zone){
+			grid.setBlocked();
+		}
 	}
 	
 	/**

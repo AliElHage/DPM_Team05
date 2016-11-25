@@ -74,54 +74,56 @@ public class Navigation extends Thread{
 	private ArrayList<Grid> calculatePath(Grid gridDest){
 		boolean isBlocked = false;
 		ArrayList<Grid>	path = new ArrayList<Grid>();
-		ArrayList<Grid> upperPath = new ArrayList<Grid>(); 	//create two array for taking upper and lower detour respectively
-		ArrayList<Grid> lowerPath = new ArrayList<Grid>();
+		ArrayList<Grid> leftPath = new ArrayList<Grid>(); 	//create two array for taking upper and lower detour respectively
+		ArrayList<Grid> rightPath = new ArrayList<Grid>();
 		
 		for(Grid grid: getPath(gridDest)){
-			upperPath.add(grid);
-			lowerPath.add(grid);
+			leftPath.add(grid);
+			rightPath.add(grid);
 			path.add(grid);
 		}
-		int upperLength = path.size();
-		int lowerLength = path.size();
+		int leftPathLength = path.size();
+		int rightPathLength = path.size();
 		
+		//skip the first grid
 		int i = 0;
-		while(i<upperLength) {
-			upperLength = upperPath.size();
-			Grid grid = upperPath.get(i);
-			if(map.checkBlocked(grid)){
+		while(i<leftPathLength) {
+			Grid grid = leftPath.get(i);
+			if(map.checkBlocked(grid) && i>0){
+				Grid prevGrid = leftPath.get(i-1);
 				isBlocked=true;
-				upperPath.remove(i);
-				upperPath.addAll(i, getUpperDetour(grid, gridDest));
+				leftPath.remove(i);
+				leftPath.addAll(i, getLeftDetour(grid, gridDest, prevGrid));
 			}
 			else {
 				i++;
 			}
-		}
+			leftPathLength = leftPath.size();
+		} 
 		int j =0;
-		Sound.beep();
-		while(j<lowerLength) {
-			lowerLength = lowerPath.size();
-			Grid grid = lowerPath.get(j);
-			if(map.checkBlocked(grid)){
+		while(j<rightPathLength) {	
+			Grid grid = rightPath.get(j);			
+			if(map.checkBlocked(grid) && j>0){
+				Grid prevGrid = rightPath.get(j-1);
 				isBlocked=true;
-				lowerPath.remove(j);
-				lowerPath.addAll(j, getLowerDetour(grid, gridDest));
+				rightPath.remove(j);
+				rightPath.addAll(j, getRightDetour(grid, gridDest, prevGrid));
 			}
 			else {
 				j++;
 			}
+			rightPathLength = rightPath.size();
 		}
 		Sound.beep();
 		if(!isBlocked) 
 			return path;
 		
-		map.revisePath(upperPath);
-		map.revisePath(lowerPath);
-		if(upperPath.size()<lowerPath.size()){	// if taking upper detour covers less grids then return it
-			return upperPath;
+		map.revisePath(leftPath);
+		map.revisePath(rightPath);
+		if(leftPath.size()<rightPath.size()){	// if taking upper detour covers less grids then return it
+			return leftPath;
 		}else{									//otherwise return the lower detour
-			return lowerPath;
+			return rightPath;
 		}
 	}
 	
@@ -130,21 +132,56 @@ public class Navigation extends Thread{
 	 * @param gridBlocked
 	 * @return an arrayList of grid depicting a detour around the grid
 	 */
-	public ArrayList<Grid> getUpperDetour(Grid gridBlocked, Grid destGrid){
-		ArrayList<Grid> detourPath = new ArrayList<>();
-		if(gridBlocked.getGridX() == 0 || gridBlocked.getGridX() == 10 || gridBlocked.getGridY() == 0 || gridBlocked.getGridY() == 10) {
-			return detourPath;
-		}
+	public ArrayList<Grid> getLeftDetour(Grid gridBlocked, Grid destGrid, Grid prevGrid){
+		ArrayList<Grid> leftPath = new ArrayList<>();
+		int gridBlockedX = gridBlocked.getGridX();
+		int gridBlockedY = gridBlocked.getGridY();
+		int prevGridY = prevGrid.getGridY();
+		int prevGridX = prevGrid.getGridX();
 		
-		detourPath.add(map.getGrid(gridBlocked.getGridX() - 1, gridBlocked.getGridY()));
-		for (int i = 0; i < 3; i++) {
-			detourPath.add(map.getGrid(gridBlocked.getGridX() + (i - 1), gridBlocked.getGridY() + 1));
-			if(map.getGrid(gridBlocked.getGridX()+(i-1), gridBlocked.getGridY()+1).equals(destGrid))
-				return detourPath;
+		if(gridBlockedX == 0 || gridBlockedX == 10 || gridBlockedY == 0 || gridBlockedY == 10) {
+			return leftPath;
 		}
-		detourPath.add(map.getGrid(gridBlocked.getGridX() + 1, gridBlocked.getGridY()));
-		
-		return detourPath;
+		if(prevGridY<gridBlockedY) {
+			Sound.beep();
+			if(prevGridX > gridBlockedX)
+				leftPath.add(map.getGrid(gridBlockedX, gridBlockedY -1));
+			for(int i=0; i<3;i++) {
+				leftPath.add(map.getGrid(gridBlockedX -1, gridBlockedY +(i-1)));
+				if(map.getGrid(gridBlockedX -1, gridBlockedY +(i-1)).equals(destGrid))
+					return leftPath;
+			}
+			leftPath.add(map.getGrid(gridBlockedX, gridBlockedY+1));
+		}
+		else if(prevGridY > gridBlockedY) {
+			if(prevGridX < gridBlockedX)
+				leftPath.add(map.getGrid(gridBlockedX, gridBlockedY+1));
+			for(int i=0;i<3;i++){		
+				leftPath.add(map.getGrid(gridBlockedX+1, gridBlockedY - (i-1)));				
+				if(map.getGrid(gridBlockedX+1, gridBlockedY-(i-1)).equals(destGrid))
+					return leftPath;
+			}
+			leftPath.add(map.getGrid(gridBlockedX, gridBlockedY-1));
+		}
+		else if(prevGridX < gridBlockedX) {
+			leftPath.add(map.getGrid(gridBlockedX -1, gridBlockedY));
+			for(int i=0; i<3;i++) {
+				leftPath.add(map.getGrid(gridBlockedX +(i-1), gridBlockedY +1));
+				if(map.getGrid(gridBlockedX +(i-1), gridBlockedY +1).equals(destGrid))
+					return leftPath;
+			}
+			leftPath.add(map.getGrid(gridBlockedX +1, gridBlockedY));
+		}	
+		else {
+			leftPath.add(map.getGrid(gridBlockedX +1, gridBlockedY));
+			for(int i=0; i<3;i++) {
+				leftPath.add(map.getGrid(gridBlockedX -(i-1), gridBlockedY -1));
+				if(map.getGrid(gridBlockedX -(i-1), gridBlockedY -1).equals(destGrid))
+					return leftPath;
+			}
+			leftPath.add(map.getGrid(gridBlockedX -1, gridBlockedY));
+		}
+		return leftPath;
 	}
 	
 	
@@ -153,22 +190,56 @@ public class Navigation extends Thread{
 	 * @param gridBlocked
 	 * @return an arrayList of grid depicting a detour around the grid
 	 */
-	public ArrayList<Grid> getLowerDetour(Grid gridBlocked, Grid destGrid){
-		ArrayList<Grid> detourPath = new ArrayList<>();
-		
-		if(gridBlocked.getGridX() == 0 || gridBlocked.getGridX() == 10 || gridBlocked.getGridY() == 0 || gridBlocked.getGridY() == 10) {
-			return detourPath;
+	public ArrayList<Grid> getRightDetour(Grid gridBlocked, Grid destGrid, Grid prevGrid){
+		ArrayList<Grid> rightPath = new ArrayList<>();
+		int gridBlockedX = gridBlocked.getGridX();
+		int gridBlockedY = gridBlocked.getGridY();
+		int prevGridY = prevGrid.getGridY();
+		int prevGridX = prevGrid.getGridX();
+		if(gridBlockedX == 0 || gridBlockedX == 10 || gridBlockedY == 0 || gridBlockedY == 10) {
+			return rightPath;
 		}
 		
-		detourPath.add(map.getGrid(gridBlocked.getGridX()-1, gridBlocked.getGridY()));
-		for(int i=0;i<3;i++){
-			
-			detourPath.add(map.getGrid(gridBlocked.getGridX()+(i-1), gridBlocked.getGridY()-1));
-			if(map.getGrid(gridBlocked.getGridX()+(i-1), gridBlocked.getGridY()-1).equals(destGrid))
-				return detourPath;
+		if(prevGridY<gridBlockedY){
+			if(prevGridX < gridBlockedX)
+				rightPath.add(map.getGrid(gridBlockedX, gridBlockedY-1));
+			for(int i=0; i<3;i++) {
+				rightPath.add(map.getGrid(gridBlockedX+1, gridBlockedY +(i-1)));
+				if(map.getGrid(gridBlockedX+1, gridBlockedY + (i-1)).equals(destGrid))
+					return rightPath;
+			}
+			rightPath.add(map.getGrid(gridBlockedX, gridBlockedY+1));
 		}
-		detourPath.add(map.getGrid(gridBlocked.getGridX()+1, gridBlocked.getGridY()));
-		return detourPath;
+		else if(prevGridY>gridBlockedY) {
+			if(prevGridX > gridBlockedX )
+				rightPath.add(map.getGrid(gridBlockedX, gridBlockedY +1));
+			for(int i=0; i<3;i++) {
+				rightPath.add(map.getGrid(gridBlockedX -1, gridBlockedY -(i-1)));
+				if(map.getGrid(gridBlockedX -1, gridBlockedY -(i-1)).equals(destGrid))
+					return rightPath;
+			}
+			rightPath.add(map.getGrid(gridBlockedX, gridBlockedY-1));
+		}
+		else if(prevGridX<gridBlockedX){
+			rightPath.add(map.getGrid(gridBlockedX-1, gridBlockedY));
+			for(int i=0;i<3;i++){		
+				rightPath.add(map.getGrid(gridBlockedX + (i-1), gridBlockedY-1));			
+				if(map.getGrid(gridBlockedX + (i-1), gridBlockedY-1).equals(destGrid))
+					return rightPath;
+			}
+			rightPath.add(map.getGrid(gridBlockedX+1, gridBlockedY));	
+		}
+		else {
+			rightPath.add(map.getGrid(gridBlockedX+1, gridBlockedY));
+			for(int i=0;i<3;i++){		
+				rightPath.add(map.getGrid(gridBlockedX-(i-1), gridBlockedY+1));				
+				if(map.getGrid(gridBlockedX-(i-1), gridBlockedY+1).equals(destGrid))
+					return rightPath;
+			}
+			rightPath.add(map.getGrid(gridBlockedX-1, gridBlockedY));	
+		}
+
+		return rightPath;
 	}
 		
 	
@@ -201,14 +272,10 @@ public class Navigation extends Thread{
 		currentGridX = currentGridIndex[0];
 		currentGridY = currentGridIndex[1];
 		
-		//test
-		LCD.drawString("curGrid: " +currentGridX +","+ currentGridY,0, 3);
-		LCD.drawString("destGrid: " +destGridX +","+ destGridY,0, 4);
-		//end test
-
-		
+	
 		switch (determineDirection()) {
 		case UP:
+			path.add(map.getGrid(currentGridX, currentGridY));
 			while(currentGridY!=destGridY ){
 				LCD.drawString("Up", 0, 2);
 				path.add(map.getGrid(currentGridX, ++currentGridY));		// add the grids to the path collection to constitute a path up
@@ -216,6 +283,7 @@ public class Navigation extends Thread{
 			break;
 			
 		case DOWN:
+			path.add(map.getGrid(currentGridX, currentGridY));
 			while(currentGridY!=destGridY){
 				LCD.drawString("Down", 0, 2);
 				path.add(map.getGrid(currentGridX, --currentGridY));		// add the grid to the path collection to constitute a path down
@@ -223,6 +291,7 @@ public class Navigation extends Thread{
 			break;
 			
 		case LEFT:
+			path.add(map.getGrid(currentGridX, currentGridY));
 			while(currentGridX!=destGridX){
 				LCD.drawString("Left", 0, 2);
 				path.add(map.getGrid(--currentGridX, currentGridY));		// add the grid to the path collection to constitute a path left
@@ -230,6 +299,7 @@ public class Navigation extends Thread{
 			break;
 			
 		case RIGHT:	
+			path.add(map.getGrid(currentGridX, currentGridY));
 			while(currentGridX!=destGridX){
 				LCD.drawString("Right", 0, 2);
 				path.add(map.getGrid(++currentGridX, currentGridY));		// add the grid to the path collection to to constitute a path right
@@ -237,6 +307,7 @@ public class Navigation extends Thread{
 			break;
 			
 		case UPRIGHT:
+			path.add(map.getGrid(currentGridX, currentGridY));
 			while(currentGridY!=destGridY || currentGridX!=destGridX){
 				LCD.drawString("Upright", 0, 2);
 				if(destGridY > currentGridY && destGridX > currentGridX){
@@ -250,6 +321,7 @@ public class Navigation extends Thread{
 			break;
 		
 		case UPLEFT:
+			path.add(map.getGrid(currentGridX, currentGridY));
 			while(currentGridY!=destGridY || currentGridX!=destGridX){
 				LCD.drawString("Upleft", 0, 2);
 				if(destGridY > currentGridY && destGridX < currentGridX){
@@ -263,6 +335,7 @@ public class Navigation extends Thread{
 			break;
 			
 		case DOWNLEFT:
+			path.add(map.getGrid(currentGridX, currentGridY));
 			while(currentGridY!=destGridY || currentGridX!=destGridX){
 				LCD.drawString("DownLeft", 0, 2);
 				if(destGridY < currentGridY && destGridX < currentGridX){
@@ -276,6 +349,7 @@ public class Navigation extends Thread{
 			break;
 		
 		case DOWNRIGHT:
+			path.add(map.getGrid(currentGridX, currentGridY));
 			while(currentGridY!=destGridY || currentGridX!=destGridX){
 				LCD.drawString("DownRight", 0, 2);
 				if(destGridY < currentGridY && destGridX > currentGridX){
@@ -726,6 +800,18 @@ public class Navigation extends Thread{
 
 	public double getDesiredY() {
 		return desiredY;
+	}
+	public double[] getCurrentGrid(){
+		double[] result = new double[2];
+		result[0] = currentGridX;
+		result[1] = currentGridY;
+		return result;
+	}
+	public double[] getDestGrid(){
+		double[] result = new double[2];
+		result[0] = destGridX;
+		result[1] = destGridY;
+		return result;
 	}
 	
 	
