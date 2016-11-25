@@ -219,7 +219,7 @@ public class Main extends Thread{
 		
 		
 		//TEST OBJECT DETECTION 
-		while(true){
+/*		while(true){
 			while (Button.waitForAnyPress() != Button.ID_RIGHT);
 			blockHunter.approachTo();
 			if(blockHunter.isObstacle()){
@@ -228,7 +228,7 @@ public class Main extends Thread{
 				Sound.beep();
 			}
 		}
-		
+		*/
 		
 		
 		//TEST CORRECTION
