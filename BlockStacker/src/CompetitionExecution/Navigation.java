@@ -29,7 +29,7 @@ public class Navigation extends Thread{
 	enum Direction {LEFT,RIGHT,UP,DOWN,UPLEFT,UPRIGHT,DOWNLEFT,DOWNRIGHT}
 	
 	static final int TURN_SPEED = 150;
-	final static int FAST = 200, SLOW = 150, SACNNNG_SPEED = 80, ACCELERATION = 4000;    //SLOW =60  FAST =175
+	final static int FAST = 200, SLOW = 150, SACNNNG_SPEED = 60, ACCELERATION = 4000;    //SLOW =60  FAST =175
 	public Odometer odometer;
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
 	private double desiredX, desiredY;

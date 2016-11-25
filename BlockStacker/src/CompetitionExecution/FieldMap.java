@@ -115,6 +115,20 @@ public class FieldMap {
 	}
 	
 	/**
+	 * The method marked all the grids in the designated zone as blocked by passing the lower left and upper right gridINDEX 
+	 * @param LZx lower left x
+	 * @param LZy lower left y
+	 * @param UZx upper right x
+	 * @param UZy upper right y
+	 */
+	public void zoneBlocked(int LZx, int LZy, int UZx, int UZy){
+		ArrayList<Grid> zone = this.getZone(LZx, LZy, UZx, UZy);
+		for(Grid grid: zone){
+			grid.setBlocked();
+		}
+	}
+	
+	/**
 	 * This method return a collection of grids which depict the outer border of the a zone
 	 * @param LZx lower left x
 	 * @param LZy lower left y
