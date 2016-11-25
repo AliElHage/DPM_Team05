@@ -474,11 +474,6 @@ public class Navigation extends Thread{
 		this.travelTo(dest[0],dest[1]);
 	}
 	
-	/**
-	 * This method will drive robot to scout along the a collection of grids which depict a closed path
-	 * robot will move the next two grid on the closed path everytime this method is called
-	 * @param border a collection of grids depicting a border of a zone
-	 */
 	public synchronized void scoutZone(ArrayList<Grid> border){
 		int index = 0;			//index to keep track of current position on the border 
 		int[] currentGrid = FieldMap.convertPointToGrid(odometer.getX(), odometer.getY());
@@ -518,7 +513,6 @@ public class Navigation extends Thread{
 				}
 		}
 	}
-
 	/*
 	 * TravelTo function which takes as arguments the x and y position in cm Will travel to designated position, while
 	 * constantly updating it's heading
@@ -583,8 +577,6 @@ public class Navigation extends Thread{
 			minAng += 360.0;
 		this.turnTo(minAng, true);
 	}
-	
-	
 	/**
 	 * 
 	 * @return the angle the robot turns at every half
