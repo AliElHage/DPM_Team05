@@ -21,6 +21,7 @@ public class Localization {
 	private int LEFT_TURN_SPEED = 75;
 	private Odometer odo;
 	private Navigation navigator;
+	boolean leftTurnToZero;
 	
 	/**
 	 * ultrasonic sensor localization specific variables
@@ -28,7 +29,8 @@ public class Localization {
 	private USPoller rightUS, leftUS, frontUS;
 	private int threshDist = 20;
 	private int wallThresh = 40;
-	private int correctionAng = 3;
+	private int correctionAngRight = 10;
+	private int correctionAngLeft = 3;
 	
 	/**
 	 * light sensor localization specific variables
@@ -66,9 +68,9 @@ public class Localization {
 	 * determine where the theta=0 is for robot placed anywhere within the starting square by checking the angles
 	 * the robot much turn for the US sensor to be within the threshold distance from each of the walls
 	 */
+	@SuppressWarnings("deprecation")
 	public void localize() {
 		double angleA, angleB, angleAvg;
-		boolean leftTurnToZero;
 		
 		leftMotor.setSpeed(ROTATION_SPEED);
 		rightMotor.setSpeed(ROTATION_SPEED);
@@ -105,8 +107,7 @@ public class Localization {
 				while (true) {
 					if(rightUS.readUSDistance() <= threshDist){
 						Sound.beep();
-						leftMotor.stop();
-						rightMotor.stop();
+						navigator.stopMoving();
 						if(odo.getAng() < 270) {
 							angleA = 270 + odo.getAng();
 						} else {
@@ -116,6 +117,8 @@ public class Localization {
 					}
 				}
 	
+				navigator.setSpeeds(ROTATION_SPEED, ROTATION_SPEED);
+				
 				/**
 				 * start normal turning clockwise
 				 */
@@ -130,12 +133,13 @@ public class Localization {
 				while (true){
 					if(leftUS.readUSDistance() <= threshDist){
 						Sound.beep();
-						leftMotor.stop();
-						rightMotor.stop();
+						navigator.stopMoving();
 						angleB = 90 + odo.getAng();
 						break;
 					}
 				}
+				
+				
 				
 			} else {
 				
@@ -155,8 +159,7 @@ public class Localization {
 				while (true) {
 					if(leftUS.readUSDistance() <= threshDist){
 						Sound.beep();
-						leftMotor.stop();
-						rightMotor.stop();
+						navigator.stopMoving();
 						if(odo.getAng() < 270) {
 							angleA = 270 + odo.getAng();
 						} else {
@@ -165,6 +168,8 @@ public class Localization {
 						break;
 					}
 				}
+				
+				navigator.setSpeeds(ROTATION_SPEED, ROTATION_SPEED);
 				
 				/**
 				 * start normal turning couterclockwise 
@@ -180,8 +185,7 @@ public class Localization {
 				while (true){
 					if(rightUS.readUSDistance() <= threshDist){
 						Sound.beep();
-						leftMotor.stop();
-						rightMotor.stop();
+						navigator.stopMoving();
 						angleB = 90 + odo.getAng();
 						break;
 					}
@@ -202,11 +206,11 @@ public class Localization {
 			LCD.drawString("Avg+B: " + (angleAvg+angleB), 0, 5);
 			
 			if(leftTurnToZero) {
-				odo.setPosition(new double [] {0.0, 0.0, (angleAvg + angleB - 90 - correctionAng)}, new boolean []{true, true, true});
-				leftMotor.setSpeed(LEFT_TURN_SPEED);
-				rightMotor.setSpeed(LEFT_TURN_SPEED);
+				odo.setPosition(new double [] {0.0, 0.0, (angleAvg + angleB - 90 + correctionAngLeft)}, new boolean []{true, true, true});
+				navigator.setSpeeds(LEFT_TURN_SPEED, LEFT_TURN_SPEED);
 			} else {
-				odo.setPosition(new double [] {0.0, 0.0, (angleAvg + angleB - 90 + correctionAng)}, new boolean []{true, true, true});
+				odo.setPosition(new double [] {0.0, 0.0, (angleAvg + angleB - 90 + correctionAngRight)}, new boolean []{true, true, true});
+				navigator.setSpeeds(ROTATION_SPEED, ROTATION_SPEED);
 			}
 			
 			/**
@@ -272,8 +276,7 @@ public class Localization {
 		/**
 		 * stops both motors
 		 */
-		leftMotor.stop();
-		rightMotor.stop();
+		navigator.stopMoving();
 
 		/**
 		 * formula from the slides, angles are those taken when passing line
@@ -287,7 +290,13 @@ public class Localization {
 		 * with a negative, so the formula was changed to exclude the negative
 		 */
 		x = (-distance)*Math.cos(Math.toRadians(angleY));
-		y = (distance)*Math.cos(Math.toRadians(angleX));
+		
+		if (leftTurnToZero) {
+			y = (distance)*Math.cos(Math.toRadians(angleX));
+		} else {
+			y = (-distance)*Math.cos(Math.toRadians(angleX));
+		}
+		
 		
 		/**
 		 * turns to theta=0 to make it easier to set odometer position
@@ -297,6 +306,8 @@ public class Localization {
 		 * sets x and y knowing that theta is 0
 		 */
 		odo.setPosition(new double [] {x, y, odo.getAng()}, new boolean []{true, true, true});
+		
+		navigator.setSpeeds(ROTATION_SPEED, ROTATION_SPEED);
 		
 		/**
 		 * navigation method to move the robot to its final position based on calculation

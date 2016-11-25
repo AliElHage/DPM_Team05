@@ -140,7 +140,9 @@ public class Avoidance extends Thread{
 						}	
 						
 						//same as Lab1, turns robot to the left to avoid the block
-						nav.turn(0);
+						while (error < 0) {
+							nav.turn(1);
+						}
 					}
 			
 				} 
@@ -154,7 +156,9 @@ public class Avoidance extends Thread{
 				 */
 				else if (error > 0 && !firstAdjust) {
 					
-					nav.turn(y);
+					while (error > 0) {
+						nav.turn(1);
+					}
 //					leftMotor.setSpeed(motorLow+15);
 //					rightMotor.setSpeed(motorHigh);
 //			
