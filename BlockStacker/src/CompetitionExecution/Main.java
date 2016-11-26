@@ -102,6 +102,7 @@ public class Main extends Thread{
 	/*	loc.localize();
 		loc.zeroRobot();
 		Sound.beepSequence();*/
+
 		
 		
 	
@@ -114,8 +115,8 @@ public class Main extends Thread{
 		 *		then return to 15,15 (Grid 0,0)
 		 ************************************************************/
 
-	/*	FieldMap map = nav.getFieldMap();
-		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});  // reset odometer if skipping localization 
+		FieldMap map = nav.getFieldMap();
+	/*	odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});  // reset odometer if skipping localization 
 
 		//Case 1: test up/right/down/left convention
 		//START ROBOT AT BOTTOM LEFT FACING RIGHT
@@ -127,8 +128,8 @@ public class Main extends Thread{
 		Sound.beep();
 		nav.travelByPath(new Grid(1,0));
 		Sound.beep();
-		nav.travelByPath(new Grid(0,0));*/
-		
+		nav.travelByPath(new Grid(0,0));
+*/		
 		//Case 2: test upRight/DownLeft convention
 		//START ROBOT AT BOTTOM LEFT FACING RIGHT
 		/*nav.travelByPath(new Grid(1, 2));
@@ -169,6 +170,16 @@ public class Main extends Thread{
 		nav.setDest(70, 20);
 		new Thread(nav).start();*/
 		
+		
+		//TEST CALCPATH
+		//case 1 Right(Lower) Path
+//		map.getGrid(1,2).setBlocked();
+//		map.getGrid(1, 1).setBlocked();
+//		nav.travelByPath(map.getGrid(2, 2));
+//		
+//		//case 2 Left(Upper) Path 	
+//		map.getGrid(1, 1).setBlocked();
+//		nav.travelByPath(map.getGrid(2, 2));
 		
 		//TEST CLAW
 		//testing basic functions claw
@@ -214,7 +225,9 @@ public class Main extends Thread{
 		
 		
 		//TEST OBJECT DETECTION 
-		/*while(true){
+
+/*		while(true){
+
 			while (Button.waitForAnyPress() != Button.ID_RIGHT);
 			blockHunter.approachTo();
 			if(blockHunter.isObstacle()){
@@ -222,8 +235,9 @@ public class Main extends Thread{
 			}else{
 				Sound.beep();
 			}
+
 		}*/
-		
+
 		
 		
 		//TEST CORRECTION
@@ -233,11 +247,19 @@ public class Main extends Thread{
 		nav.travelTo(0, 0);*/
 		
 		
+
 		//TEST wifi instruction
 		/*FieldMap map = nav.getFieldMap();
 		nav.goZoneDesignated();				//robot should go to the green zone 
 		nav.travelByPath(map.getGrid(0, 2));	//robot should avoid red zone 
 		 */		
+
+		//TEST AVOIDANCE
+		/*Avoidance av = new Avoidance(nav, odo, leftUS, rightUS, frontUS);
+		av.start();
+		nav.setDest(0, 90);
+		new Thread(nav).start();*/
+
 		
 		
 		/*while (Button.waitForAnyPress() != Button.ID_ESCAPE);
