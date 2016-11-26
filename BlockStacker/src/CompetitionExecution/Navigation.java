@@ -52,8 +52,8 @@ public class Navigation extends Thread{
 		this.leftMotor.setAcceleration(ACCELERATION);
 		this.rightMotor.setAcceleration(ACCELERATION);
 		
-	/*	//set up the map conditions
-		if(Main.isBuilder){			//if role is builder
+		//set up the map conditions
+		/*if(Main.isBuilder){			//if role is builder
 			this.zoneDesignated = map.getZone(Main.LGZx, Main.LGZy, Main.UGZx, Main.UGZy);
 			map.zoneBlocked(Main.LRZx, Main.LRZy, Main.URZx, Main.URZy);	// block the red zone area
 		}else{						// if role is garbage collector
@@ -523,6 +523,8 @@ public class Navigation extends Thread{
 				}
 		}
 	}
+	
+	
 	/*
 	 * TravelTo function which takes as arguments the x and y position in cm Will travel to designated position, while
 	 * constantly updating it's heading
@@ -591,7 +593,7 @@ public class Navigation extends Thread{
 	 * 
 	 * @return the angle the robot turns at every half
 	 */
-	public double getAngle(){
+	public double getDesiredAngle(){
 		return this.minAng;
 	}
 	
@@ -662,7 +664,16 @@ public class Navigation extends Thread{
 	 * TurnTo function which takes an angle and boolean as arguments The boolean controls whether or not to stop the
 	 * motors when the turn is completed
 	 */
-	public void turnTo(double angle, boolean stop) {
+	public synchronized void turnTo(double angle, boolean stop) {
+		this.turnTo(angle, stop, TURN_SPEED);
+	}
+	
+	
+	/**
+	 * TurnTo function which takes an angle and boolean as arguments The boolean controls whether or not to stop the
+	 * motors when the turn is completed
+	 */
+	public synchronized void turnTo(double angle, boolean stop, int turningSpeed) {
 
 		angle = Odometer.fixDegAngle(angle);
 		double error = angle - this.odometer.getAng();
@@ -672,13 +683,13 @@ public class Navigation extends Thread{
 			error = angle - this.odometer.getAng();
 
 			if (error < -180.0) {
-				this.setSpeeds(-TURN_SPEED, TURN_SPEED);
+				this.setSpeeds(-turningSpeed, turningSpeed);
 			} else if (error < 0.0) {
-				this.setSpeeds(FAST, -SLOW);
+				this.setSpeeds(turningSpeed, -turningSpeed);
 			} else if (error > 180.0) {
-				this.setSpeeds(TURN_SPEED, -TURN_SPEED);
+				this.setSpeeds(turningSpeed, -turningSpeed);
 			} else {
-				this.setSpeeds(-TURN_SPEED, TURN_SPEED);
+				this.setSpeeds(-turningSpeed, turningSpeed);
 			}
 		}
 
@@ -687,6 +698,9 @@ public class Navigation extends Thread{
 		}
 	}
 	
+	
+	
+	
 	/**
 	 * robot rotate to the left(-) or right(+) by degree passed to the function 
 	 * @param angle
@@ -694,6 +708,17 @@ public class Navigation extends Thread{
 	public synchronized void turn(double angle) {
 		this.turnTo(odometer.getAng()-angle, true);
 	}
+	
+	/**
+	 * robot rotate to the left(-) or right(+) by degree passed to the function 
+	 * @param angle
+	 * @param turnSpeed
+	 */
+	public synchronized void turn(double angle, int turnSpeed) {
+		this.turnTo(odometer.getAng()-angle, true,turnSpeed);
+	}
+	
+	
 	
 	/**
 	 * robot turn 360 degree and stops at the end
@@ -739,7 +764,14 @@ public class Navigation extends Thread{
 		(new Thread(this)).start();	//start a thread to drive robot to destination
 	}
 	
+	
+	/**
+	 * Drive robot to the first grid of the designated zone and face to the second grid 
+	 */
 	public void goZoneDesignated(){
+		this.travelByPath(zoneDesignated.get(0));
+		
+		//******************************check if it need to turn to the second grid in the zone to ensure robot inside the zone
 		
 	}
 	

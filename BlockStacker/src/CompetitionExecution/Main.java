@@ -39,12 +39,12 @@ public class Main extends Thread{
 		 * Instantiation for Parameter Interpretation
 		 */
 		ParameterInterpretation parInt = new ParameterInterpretation();
-		//parInt.interpret();
+		/*parInt.interpret();
 		
-		/**
+		*//**
 		 * Assign team role 
-		 */
-		/*if(BTN==TEAM_NUM){
+		 *//*
+		if(BTN==TEAM_NUM){
 			isBuilder = true;
 		}else{
 			isBuilder = false;
@@ -100,7 +100,7 @@ public class Main extends Thread{
 		 */
 		lcd.initLCD();
 	/*	loc.localize();
-//		loc.zeroRobot();
+		loc.zeroRobot();
 		Sound.beepSequence();*/
 		
 		
@@ -143,7 +143,8 @@ public class Main extends Thread{
 		
 		//TEST SEARCHING
 
-		/*searching.start();
+		
+		searching.start();
 		ArrayList<double[]> targets = searching.trackingTargets();
 		searching.stopSearching();
 		for(double[] target: targets){
@@ -153,8 +154,10 @@ public class Main extends Thread{
 				Sound.beepSequence();
 			}else{
 				Sound.beep();
+				blockHunter.goToFoam();
+				claw.grasp();
 			}
-		}*/
+		}
 		
 
 		
@@ -191,13 +194,15 @@ public class Main extends Thread{
 		
 		
 		//testing stacking foams
-	/*	claw.grasp();
+		/*claw.grasp();
 		while (Button.waitForAnyPress() != Button.ID_RIGHT);
 		claw.grasp();
 		while (Button.waitForAnyPress() != Button.ID_RIGHT);
 		claw.grasp();
 		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		claw.releaseTower();*/
+		claw.releaseTower();
+*/
+
 		
 		//TEST FOAM POSITION FIX WITH CLAW 
 /*		claw.open();
@@ -209,7 +214,7 @@ public class Main extends Thread{
 		
 		
 		//TEST OBJECT DETECTION 
-		while(true){
+		/*while(true){
 			while (Button.waitForAnyPress() != Button.ID_RIGHT);
 			blockHunter.approachTo();
 			if(blockHunter.isObstacle()){
@@ -217,7 +222,7 @@ public class Main extends Thread{
 			}else{
 				Sound.beep();
 			}
-		}
+		}*/
 		
 		
 		
@@ -228,6 +233,11 @@ public class Main extends Thread{
 		nav.travelTo(0, 0);*/
 		
 		
+		//TEST wifi instruction
+		/*FieldMap map = nav.getFieldMap();
+		nav.goZoneDesignated();				//robot should go to the green zone 
+		nav.travelByPath(map.getGrid(0, 2));	//robot should avoid red zone 
+		 */		
 		
 		
 		/*while (Button.waitForAnyPress() != Button.ID_ESCAPE);
