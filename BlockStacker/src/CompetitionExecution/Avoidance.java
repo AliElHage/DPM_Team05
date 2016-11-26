@@ -25,7 +25,7 @@ public class Avoidance extends Thread{
 	private final int bandwidth = 2;			//amount off the bandCetner the robot can be
 	private final int FILTER_OUT = 30;
 	private static double OGtheta = 0.0, thetaEnd;		//stores angle robot is traveling at before it avoids the block
-	private double rightDist, error;
+	private double rightDist, frontDist, error;
 	private boolean avoid;
 	static double Xstart = 0;
 	static double Ystart = 0;
@@ -63,7 +63,12 @@ public class Avoidance extends Thread{
 	
 	public void run() {
 		rightDist = rightUS.readUSDistance();
+		frontDist = frontUS.readUSDistance();
 		error = rightDist-bandCenter;
+		
+		if(frontDist <= bandCenter) {
+			nav.turn(90);
+		}
 		
 		/**
 		 * checks if the robot is closer to a block than we would like
@@ -80,6 +85,7 @@ public class Avoidance extends Thread{
 		}
 		
 		thetaEnd  = (OGtheta + 3*Math.PI/2) % (2*Math.PI);
+		
 		
 		/**
 		 * only goes into this loop if the us sensor polls a distance closer
