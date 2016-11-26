@@ -1,5 +1,6 @@
 package CompetitionExecution;
 
+import lejos.hardware.Sound;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
@@ -64,11 +65,14 @@ public class Avoidance extends Thread{
 		rightDist = rightUS.readUSDistance();
 		error = rightDist-bandCenter;
 		
-		/* checks if the robot is closer to a block than we would like
+		/**
+		 * checks if the robot is closer to a block than we would like
 		 * if it is, boolean avoid becomes true and next loop beings
 		 * as the robot tries to avoid the block
 		 */
 		if (rightDist <= bandCenter) {
+			Sound.beepSequenceUp();
+			nav.interruptTraveling();
 			avoid = true;
 			Xstart = odo.getX();
 			Ystart = odo.getY();
@@ -77,26 +81,28 @@ public class Avoidance extends Thread{
 		
 		thetaEnd  = (OGtheta + 3*Math.PI/2) % (2*Math.PI);
 		
-		/* only goes into this loop if the us sensor polls a distance closer
+		/**
+		 * only goes into this loop if the us sensor polls a distance closer
 		 * than the bandCenter. This loop is starts the BangBang process to avoid the block
 		 * and (tries to) kick out when the robot fully passes the block
 		 */
 		if (avoid) {
 			double thetaEnd  = (OGtheta + 3*Math.PI/2) % (2*Math.PI);
 			
-			//TEST
-				int degOG = (int)(OGtheta * 180/Math.PI);
-				int ED = (int)(thetaEnd * 180/Math.PI);
-				LCD.drawString("OG: " + degOG, 10, 3);
-				LCD.drawString("ED: " + ED, 10, 5);
-			//END TEST	
+//			//TEST
+//				int degOG = (int)(OGtheta * 180/Math.PI);
+//				int ED = (int)(thetaEnd * 180/Math.PI);
+//				LCD.drawString("OG: " + degOG, 10, 3);
+//				LCD.drawString("ED: " + ED, 10, 5);
+//			//END TEST	
 				
 				//same as Lab1, moving forward
 				if (Math.abs(error) <= bandwidth) {
 					nav.goForward(20);
 				}
 				
-				/* the robot will travel around the block to the right, so if the robot
+				/**
+				 * the robot will travel around the block to the right, so if the robot
 				 * has made it all the way around the block, the angle read by the
 				 * odometer should be 90 degrees less than the angle that the robot was
 				 * traveling at before it started navigating around the block. At this 
@@ -106,7 +112,8 @@ public class Avoidance extends Thread{
 				
 				else if (odo.getAng() <= ( thetaEnd + Math.PI/36)  && odo.getAng() >= (  thetaEnd - Math.PI/36)  ) {	
 					
-					/* if the original angle at which the robot was traveling is zero
+					/**
+					 * if the original angle at which the robot was traveling is zero
 					 * taking into account error, send the robot from where it is after
 					 * moving around the block, to the first point, (60,0). If the original
 					 * angle at which the robot was traveling is anything other than that,
@@ -125,10 +132,13 @@ public class Avoidance extends Thread{
 				
 				else if (error < 0) {
 					
-					//keeps the robot a bit closer to the block so it goes around properly
+					/**
+					 * keeps the robot a bit closer to the block so it goes around properly
+					 */
 					if (rightDist < bandCenter-5) {
 						
-						/* Checks to see if this is the original encounter of the block using boolean
+						/**
+						 * Checks to see if this is the original encounter of the block using boolean
 						 * "firstAdjust". If it is, it sets "OGtheta" to the
 						 * angle the robot is currently traveling at and sets
 						 * the boolean to false so that "OGtheta" is never reset.
@@ -139,7 +149,9 @@ public class Avoidance extends Thread{
 							firstAdjust = false;					
 						}	
 						
-						//same as Lab1, turns robot to the left to avoid the block
+						/**
+						 * same as Lab1, turns robot to the left to avoid the block
+						 */
 						while (error < 0) {
 							nav.turn(1);
 						}
@@ -147,7 +159,8 @@ public class Avoidance extends Thread{
 			
 				} 
 				
-				/* same as Lab1 except for "firstAdjust" condition. This statement
+				/**
+				 * same as Lab1 except for "firstAdjust" condition. This statement
 				 * turns the robot to the left to go back around to the other side
 				 * of the block. The difference is that it checks to make sure that
 				 * this is not the first encounter with the block as a double check
@@ -167,7 +180,7 @@ public class Avoidance extends Thread{
 				}
 		}
 		
-		
+		nav.resumeTraveling();
 	}
 
 }

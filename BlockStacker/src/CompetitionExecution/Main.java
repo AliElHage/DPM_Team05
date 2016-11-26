@@ -98,77 +98,77 @@ public class Main extends Thread{
 		/**
 		 * Localize robot
 		 */
-		lcd.initLCD();
-		loc.localize();
-//		loc.zeroRobot();
-		Sound.beepSequence();
+//		lcd.initLCD();
+//		loc.localize();
+////		loc.zeroRobot();
+//		Sound.beepSequence();
 		
 		
 	
 		
-//		//TEST TRAVELING
-//		 /************************************************************
-//		 *	consider 0,0 as localization point
-//		 *In each case robot will have the following waypoint on 4*4 grid
-//		 *		travels to 45,75 (Grid 1,2)
-//		 *		then return to 15,15 (Grid 0,0)
-//		 ************************************************************/
-//
-//		FieldMap map = nav.getFieldMap();
-//	/*	odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});  // reset odometer if skipping localization 
-//
-//		//Case 1: test up/right/down/left convention
-//		//START ROBOT AT BOTTOM LEFT FACING RIGHT
-//		
-//		//make sure always traveling in right angles
-//		nav.travelByPath(new Grid(0,2));
-//		Sound.beep();
-//		nav.travelByPath(new Grid(1,2));
-//		Sound.beep();
-//		nav.travelByPath(new Grid(1,0));
-//		Sound.beep();
-//		nav.travelByPath(new Grid(0,0));
-//*/		
-//		//Case 2: test upRight/DownLeft convention
-//		//START ROBOT AT BOTTOM LEFT FACING RIGHT
-//		/*nav.travelByPath(new Grid(1, 2));
-//		nav.travelByPath(new Grid(0, 0));
-//		
-//		//case 3: test upLeft/Downright convention
-//		//START ROBOT AT BOTTOM RIGHT FACING RIGHT
-//		odo.setPosition(new double [] {60.0, 0.0,0.0},new boolean []{true, true, true});
-//		nav.travelByPath(map.getGrid(1, 2));
-//		nav.travelByPath(map.getGrid(0, 0));
-//		*/
-//		
-//		//TEST SEARCHING
-//
-//		/*searching.start();
-//		ArrayList<double[]> targets = searching.trackingTargets();
-//		searching.stopSearching();
-//		for(double[] target: targets){
-//			nav.turnToDest(target[0], target[1]);
-//			blockHunter.approachTo();
-//			if(blockHunter.isObstacle()){
-//				Sound.beepSequence();
-//			}else{
-//				Sound.beep();
-//			}
-//		}*/
-//		
-//
-//		
-//		//TEST NAVIGATION
-//		/*odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});
-//		nav.setDest(40, 50);
-//		new Thread(nav).start();
-//		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-//		nav.setDest(70, 20);
-//		new Thread(nav).start();*/
-//		
-//		
-//		//TEST CALCPATH
-//		//case 1 Right(Lower) Path
+		//TEST TRAVELING
+		 /************************************************************
+		 *	consider 0,0 as localization point
+		 *In each case robot will have the following waypoint on 4*4 grid
+		 *		travels to 45,75 (Grid 1,2)
+		 *		then return to 15,15 (Grid 0,0)
+		 ************************************************************/
+
+		FieldMap map = nav.getFieldMap();
+	/*	odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});  // reset odometer if skipping localization 
+
+		//Case 1: test up/right/down/left convention
+		//START ROBOT AT BOTTOM LEFT FACING RIGHT
+		
+		//make sure always traveling in right angles
+		nav.travelByPath(new Grid(0,2));
+		Sound.beep();
+		nav.travelByPath(new Grid(1,2));
+		Sound.beep();
+		nav.travelByPath(new Grid(1,0));
+		Sound.beep();
+		nav.travelByPath(new Grid(0,0));
+*/		
+		//Case 2: test upRight/DownLeft convention
+		//START ROBOT AT BOTTOM LEFT FACING RIGHT
+		/*nav.travelByPath(new Grid(1, 2));
+		nav.travelByPath(new Grid(0, 0));
+		
+		//case 3: test upLeft/Downright convention
+		//START ROBOT AT BOTTOM RIGHT FACING RIGHT
+		odo.setPosition(new double [] {60.0, 0.0,0.0},new boolean []{true, true, true});
+		nav.travelByPath(map.getGrid(1, 2));
+		nav.travelByPath(map.getGrid(0, 0));
+		*/
+		
+		//TEST SEARCHING
+
+		/*searching.start();
+		ArrayList<double[]> targets = searching.trackingTargets();
+		searching.stopSearching();
+		for(double[] target: targets){
+			nav.turnToDest(target[0], target[1]);
+			blockHunter.approachTo();
+			if(blockHunter.isObstacle()){
+				Sound.beepSequence();
+			}else{
+				Sound.beep();
+			}
+		}*/
+		
+
+		
+		//TEST NAVIGATION
+		/*odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});
+		nav.setDest(40, 50);
+		new Thread(nav).start();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		nav.setDest(70, 20);
+		new Thread(nav).start();*/
+		
+		
+		//TEST CALCPATH
+		//case 1 Right(Lower) Path
 //		map.getGrid(1,2).setBlocked();
 //		map.getGrid(1, 1).setBlocked();
 //		nav.travelByPath(map.getGrid(2, 2));
@@ -176,72 +176,77 @@ public class Main extends Thread{
 //		//case 2 Left(Upper) Path 	
 //		map.getGrid(1, 1).setBlocked();
 //		nav.travelByPath(map.getGrid(2, 2));
-//		
-//		//TEST CLAW
-//		//testing basic functions claw
-//	/*	claw.open();
-//		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-//		claw.close();
-//		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-//		claw.open();
-//		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-//		claw.putDown();
-//		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-//		claw.pullUp();
-//		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-//		claw.putDownToObj();
-//		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-//		claw.putDownToBot();
-//		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-//		claw.open();
-//		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-//		claw.close();
-//		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-//		claw.pullUp();*/
-//		
-//		
-//		//testing stacking foams
-//	/*	claw.grasp();
-//		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-//		claw.grasp();
-//		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-//		claw.grasp();
-//		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-//		claw.releaseTower();*/
-//		
-//		//TEST FOAM POSITION FIX WITH CLAW 
-///*		claw.open();
-//		claw.putDown();
-//		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-//		claw.fixAndGrasp();
-//		claw.pullUp();*/
-//		
-//		
-//		
-//		//TEST OBJECT DETECTION 
-///*		while(true){
-//			while (Button.waitForAnyPress() != Button.ID_RIGHT);
-//			blockHunter.approachTo();
-//			if(blockHunter.isObstacle()){
-//				Sound.beepSequence();
-//			}else{
-//				Sound.beep();
-//			}
-//		}
-//		*/
-//		
-//		
-//		//TEST CORRECTION
-//		/*correction.start();
-//		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});
-//		nav.travelTo(90, 0);
-//		nav.travelTo(0, 0);*/
-//		
-//		
-//		
-//		
-//		/*while (Button.waitForAnyPress() != Button.ID_ESCAPE);
-//		System.exit(0);*/
-//		
+		
+		//TEST CLAW
+		//testing basic functions claw
+	/*	claw.open();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.close();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.open();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.putDown();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.pullUp();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.putDownToObj();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.putDownToBot();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.open();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.close();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.pullUp();*/
+		
+		
+		//testing stacking foams
+	/*	claw.grasp();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.grasp();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.grasp();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.releaseTower();*/
+		
+		//TEST FOAM POSITION FIX WITH CLAW 
+/*		claw.open();
+		claw.putDown();
+		while (Button.waitForAnyPress() != Button.ID_RIGHT);
+		claw.fixAndGrasp();
+		claw.pullUp();*/
+		
+		
+		
+		//TEST OBJECT DETECTION 
+/*		while(true){
+			while (Button.waitForAnyPress() != Button.ID_RIGHT);
+			blockHunter.approachTo();
+			if(blockHunter.isObstacle()){
+				Sound.beepSequence();
+			}else{
+				Sound.beep();
+			}
+		}
+		*/
+		
+		
+		//TEST CORRECTION
+		/*correction.start();
+		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});
+		nav.travelTo(90, 0);
+		nav.travelTo(0, 0);*/
+		
+		
+		//TEST AVOIDANCE
+		Avoidance av = new Avoidance(nav, odo, leftUS, rightUS, frontUS);
+		av.start();
+		nav.setDest(0, 90);
+		new Thread(nav).start();
+		
+		
+		/*while (Button.waitForAnyPress() != Button.ID_ESCAPE);
+		System.exit(0);*/
+		
 	}
 }

@@ -4,6 +4,7 @@ import lejos.hardware.Sound;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.robotics.SampleProvider;
+import lejos.utility.Delay;
 
 /**
  * identifies (0,0) on grid and centralizes robot at this point
@@ -29,8 +30,8 @@ public class Localization {
 	private USPoller rightUS, leftUS, frontUS;
 	private int threshDist = 20;
 	private int wallThresh = 40;
-	private int correctionAngRight = 10;
-	private int correctionAngLeft = 3;
+	private int correctionAngRight = 13;
+	private int correctionAngLeft = 13;
 	
 	/**
 	 * light sensor localization specific variables
@@ -68,12 +69,13 @@ public class Localization {
 	 * determine where the theta=0 is for robot placed anywhere within the starting square by checking the angles
 	 * the robot much turn for the US sensor to be within the threshold distance from each of the walls
 	 */
-	@SuppressWarnings("deprecation")
 	public void localize() {
 		double angleA, angleB, angleAvg;
 		
 		leftMotor.setSpeed(ROTATION_SPEED);
 		rightMotor.setSpeed(ROTATION_SPEED);
+			
+			Delay.msDelay(200);
 			
 			/** 
 			 * if the robot starts facing a wall, turn it 180 degrees so it has passed
@@ -137,10 +139,7 @@ public class Localization {
 						angleB = 90 + odo.getAng();
 						break;
 					}
-				}
-				
-				
-				
+				}	
 			} else {
 				
 				leftTurnToZero = true;
