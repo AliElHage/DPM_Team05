@@ -66,16 +66,12 @@ public class Avoidance extends Thread{
 		frontDist = frontUS.readUSDistance();
 		error = rightDist-bandCenter;
 		
-		if(frontDist <= bandCenter) {
-			nav.turn(90);
-		}
-		
 		/**
 		 * checks if the robot is closer to a block than we would like
 		 * if it is, boolean avoid becomes true and next loop beings
 		 * as the robot tries to avoid the block
 		 */
-		if (rightDist <= bandCenter) {
+		if (frontDist <= bandCenter) {
 			Sound.beepSequenceUp();
 			nav.interruptTraveling();
 			avoid = true;
@@ -86,13 +82,14 @@ public class Avoidance extends Thread{
 		
 		thetaEnd  = (OGtheta + 3*Math.PI/2) % (2*Math.PI);
 		
+		nav.turn(90);
 		
 		/**
 		 * only goes into this loop if the us sensor polls a distance closer
 		 * than the bandCenter. This loop is starts the BangBang process to avoid the block
 		 * and (tries to) kick out when the robot fully passes the block
 		 */
-		if (avoid) {
+		while (avoid) {
 			double thetaEnd  = (OGtheta + 3*Math.PI/2) % (2*Math.PI);
 			
 //			//TEST
@@ -118,22 +115,8 @@ public class Avoidance extends Thread{
 				
 				else if (odo.getAng() <= ( thetaEnd + Math.PI/36)  && odo.getAng() >= (  thetaEnd - Math.PI/36)  ) {	
 					
-					/**
-					 * if the original angle at which the robot was traveling is zero
-					 * taking into account error, send the robot from where it is after
-					 * moving around the block, to the first point, (60,0). If the original
-					 * angle at which the robot was traveling is anything other than that,
-					 * send it to the second point, (0,60).
-					 */
-					if (Math.toDegrees(OGtheta) > -5 && Math.toDegrees(OGtheta) < 5){
-						LCD.drawString("INSIDE1", 10, 2);
-						nav.travelTo(0, 60);
-						Avoiding = false;
-					} else {
-						LCD.drawString("INSIDE2", 10, 2);
-						nav.travelTo(60, 0);
-						Avoiding = false;
-					}
+					avoid = false;
+					
 				} 
 				
 				else if (error < 0) {
