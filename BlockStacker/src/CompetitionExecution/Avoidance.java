@@ -102,6 +102,7 @@ public class Avoidance extends Thread{
 				//same as Lab1, moving forward
 				if (Math.abs(error) <= bandwidth) {
 					nav.goForward(20);
+					
 				}
 				
 				/**
