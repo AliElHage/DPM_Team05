@@ -513,14 +513,15 @@ public class Navigation extends Thread{
 	 */
 	public void travelByPath(Grid destGrid){
 		ArrayList<Grid> travelPath = calculatePath(destGrid);
-		for(Grid grid: travelPath){
+		for(int i=1; i<travelPath.size(); i++){
+			Grid grid = travelPath.get(i);
 			double[] dest = FieldMap.convertGridToPoint(grid.getGridX(),grid.getGridY());
-				travelTo(dest[0],dest[1]);
-				try {
-					Thread.sleep(300);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+			travelTo(dest[0],dest[1]);
+			try {
+				Thread.sleep(300);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	/*
