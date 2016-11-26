@@ -10,12 +10,13 @@ import lejos.utility.Delay;
 public class BlockHunter extends Thread{
 	
 	final static int ACCELERATION=4000, SPEED_NORMAL=200;
-	final static double TARGET_DISTANCE=12.5, OBJECT_DIS=40;
+	final static double TARGET_DISTANCE=12.5, OBJECT_DIS=40, GRASP_DIS= 6.7;
 	final static double  DETECTION_OFFSET= 4.3;
 	private Navigation nav;
 	private USPoller frontUS, leftUS, rightUS;
 	private ClawHandler claw; 
 	private boolean foamCaptured;
+	private boolean scanDone;
 	private ArrayList<double[]> destinations;				//store the target coordinates after sweeping search
 	
 	public BlockHunter(Navigation nav, USPoller frontUS, USPoller leftUS, USPoller rightUS, ClawHandler claw){
@@ -24,6 +25,7 @@ public class BlockHunter extends Thread{
 		this.leftUS = leftUS;
 		this.rightUS = rightUS;
 		this.claw = claw;
+		this.scanDone = false;
 		this.foamCaptured = false;
 		this.destinations = new ArrayList<>();
 
@@ -120,6 +122,27 @@ public class BlockHunter extends Thread{
 	 * Drive robot to have a ideal distance to object in the front to be ready for object detection
 	 */
 	public void approachTo(){
+		double distance, angle, currentDis;
+		
+		(new Thread(){
+			public void run(){
+				nav.turn(-20, Navigation.SACNNNG_SPEED);
+				nav.turn(40, Navigation.SACNNNG_SPEED);
+				scanDone = true;
+			}
+		}).start();					// start a thread to let robot rotate
+		
+		distance = frontUS.readUSDistance();			// set up the initial US distance reading and angle 
+		angle = nav.odometer.getAng();
+		while(!this.scanDone){
+			currentDis = frontUS.readUSDistance();		//get the current US distance 
+			if(currentDis < distance){
+				angle = nav.odometer.getAng();			//update distance and angle if it reads a small US distance 
+				distance = currentDis;
+			}
+		}
+		this.scanDone = false;							//reset the flag
+		nav.turnTo(angle, true);						//turn the detected minimum US distance and approach to it
 		while(frontUS.readUSDistance() > TARGET_DISTANCE){
 			nav.moveForward();
 		}
@@ -131,7 +154,7 @@ public class BlockHunter extends Thread{
 	 *  Check if there is any object within vision range
 	 * @return
 	 */
-	private boolean checkFront(){
+	private boolean checkFront(){		
 		if(frontUS.readUSDistance() < OBJECT_DIS){
 			return true;
 		}else{
@@ -148,6 +171,17 @@ public class BlockHunter extends Thread{
 		nav.goBackward(DETECTION_OFFSET);//let robot move backward a bit to ensure robot to detect the same spot as front
 		Delay.msDelay(100); 	// wait 100ms to set up US Sensor 
 		return rightUS.readUSDistance() <= TARGET_DISTANCE; // return object is an obstacle if the reading less than target distance 
+	}
+	
+	/**
+	 * Adjust robot position to grasp the foam block
+	 */
+	public void goToFoam(){
+		nav.turn(90);
+		if(frontUS.readUSDistance() > GRASP_DIS){
+			nav.moveForward();
+		}
+		nav.stopMoving();
 	}
 	
 

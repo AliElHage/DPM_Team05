@@ -7,15 +7,15 @@ public class ClawHandler {
 	
 	final static int clawSpeed = 100;					// speed of clawMotor
 	final static int pulleySpeed = 300;					// speed of pulleyMotor
-	final static double initialHeight =16.7;			// initial position of claws relative to the ground
+	final static double initialHeight =16.1;			// initial position of claws relative to the ground
 	final static double minDistanceFromGround = 2.2;	// minimum distance of claw relative to ground
-	final static double safeDropDistance = 10.8;			// amount to lower the claws to safely drop blocks on top of each other
+	final static double safeDropDistance = 9.8;			// amount to lower the claws to safely drop blocks on top of each other
 	final static double motorRadius = 0.7;				// distance between the middle of the motor and the peripheral holes
 	final static int clawOpenAngle = 50, clawCloseAngle = -10, clawSemiOpenAngle = 25;
 	final static int clawAdjustingAngle = 10, graspOffsetDis = 2;
 	final static double offsetLift = 0.3; 
 	private Navigation nav;
-	private double angleToRelease, angleToLift, angleToSet, angleToGrasp;	// amount by which to move the claws from their initial position for pulley	
+	private double angleToRelease, angleToLift, angleToSet;	// amount by which to move the claws from their initial position for pulley	
 	private EV3LargeRegulatedMotor pulleyMotor, clawMotor;	// all claw-related motors
 	private int counter;									// counts the amount of blocks stacked
 	
@@ -31,10 +31,9 @@ public class ClawHandler {
 		this.angleToRelease = this.computePulleyTurnAngle(initialHeight -minDistanceFromGround);
 		this.angleToLift = this.computePulleyTurnAngle(initialHeight - minDistanceFromGround + offsetLift);
 		this.angleToSet = this.computePulleyTurnAngle(safeDropDistance);
-		this.angleToGrasp = this.computePulleyTurnAngle(graspOffsetDis);
 		this.pulleyMotor.setSpeed(pulleySpeed);
 		this.clawMotor.setSpeed(clawSpeed);
-		this.pulleyMotor.rotate(-1, true);
+		this.pulleyMotor.rotate(-3);
 		this.open();
 	}
 
