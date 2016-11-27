@@ -29,7 +29,7 @@ public class Navigation extends Thread{
 	enum Direction {LEFT,RIGHT,UP,DOWN,UPLEFT,UPRIGHT,DOWNLEFT,DOWNRIGHT}
 	
 	static final int TURN_SPEED = 150;
-	final static int FAST = 200, SLOW = 150, SACNNNG_SPEED = 45, ACCELERATION = 4000;    //SLOW =60  FAST =175
+	final static int FAST = 200, SLOW = 150, SACNNNG_SPEED = 50, ACCELERATION = 4000;    //SLOW =60  FAST =175  SCAN =45
 	public Odometer odometer;
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
 	private double desiredX, desiredY;
@@ -78,6 +78,16 @@ public class Navigation extends Thread{
 	public synchronized void setDest(double desiredX, double desiredY){
 		this.desiredX = desiredX;
 		this.desiredY = desiredY;
+	}
+	
+	/**
+	 * To initialized the desiredX and desiredY by passing a dest grid
+	 * @param grid
+	 */
+	public synchronized void setDest(Grid grid){
+		double[] dest = FieldMap.convertGridToPoint(grid.getGridX(), grid.getGridY());
+		this.desiredX = dest[0];
+		this.desiredY = dest[1];
 	}
 	
 	
@@ -434,8 +444,6 @@ public class Navigation extends Thread{
 		return determineDirection();
 	}
 	
-	
-	
 	/*
 	 * Functions to set the motor speeds jointly
 	 */
@@ -512,16 +520,18 @@ public class Navigation extends Thread{
 	 * @param destGrid
 	 */
 	public void travelByPath(Grid destGrid){
+		destGridX = destGrid.getGridX();
+		destGridY = destGrid.getGridY();		//set up the dests
+		
 		ArrayList<Grid> travelPath = calculatePath(destGrid);
 		for(int i=1; i<travelPath.size(); i++){
+			if(interrupted){			// if traveling is interrupted, then return
+				return;
+			}
 			Grid grid = travelPath.get(i);
 			double[] dest = FieldMap.convertGridToPoint(grid.getGridX(),grid.getGridY());
 			travelTo(dest[0],dest[1]);
-			try {
-				Thread.sleep(300);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			//Delay.msDelay(300);
 		}
 	}
 	
@@ -538,7 +548,7 @@ public class Navigation extends Thread{
 		desiredY = y;
 		
 		this.turnToDest(x, y);
-		Delay.msDelay(500);
+		//Delay.msDelay(500);
 		// calculate distance to travel with given coordinates
 		distance = Math.sqrt(Math.pow(Math.abs(x - odometer.getX()), 2) + Math.pow(Math.abs(y - odometer.getY()), 2));   
 		
@@ -575,9 +585,7 @@ public class Navigation extends Thread{
 	}
 	 */
 	
-	
-	
-	
+
 	/**
 	 * Turn robot to face to the destination 
 	 * @param x 
@@ -590,6 +598,7 @@ public class Navigation extends Thread{
 			minAng += 360.0;
 		this.turnTo(minAng, true);
 	}
+	
 	/**
 	 * 
 	 * @return the angle the robot turns at every half
@@ -654,10 +663,22 @@ public class Navigation extends Thread{
 	
 	/**
 	 * check if robot has reached the destination that was passed to travelTo() last time 
-	 * @return
+	 * @return boolean
 	 */
 	public boolean checkDone(){
 		return (Math.abs(desiredX - odometer.getX()) < CM_ERR && Math.abs(desiredY - odometer.getY()) < CM_ERR);
+	}
+	
+	
+	/**
+	 * check if robot has reached the specific point
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public boolean checkIfDone(double x, double y) {
+		return Math.abs(x - odometer.getX()) < CM_ERR
+				&& Math.abs(y - odometer.getY()) < CM_ERR;
 	}
 
 	
@@ -699,9 +720,6 @@ public class Navigation extends Thread{
 		}
 	}
 	
-	
-	
-	
 	/**
 	 * robot rotate to the left(-) or right(+) by degree passed to the function 
 	 * @param angle
@@ -718,8 +736,6 @@ public class Navigation extends Thread{
 	public synchronized void turn(double angle, int turnSpeed) {
 		this.turnTo(odometer.getAng()-angle, true,turnSpeed);
 	}
-	
-	
 	
 	/**
 	 * robot turn 360 degree and stops at the end
@@ -740,9 +756,9 @@ public class Navigation extends Thread{
 	 *  To interrupt the current traveling 
 	 */
 	public void interruptTraveling(){
-		this.stopMoving();
 		this.interrupted = true;
 		this.isTraveling = false;
+		this.stopMoving();
 	}
 	
 	public void turnAmount(double amount){
@@ -758,9 +774,21 @@ public class Navigation extends Thread{
 	}
 	
 	/**
-	 *  To resume last traveling
+	 *  To resume last traveling without stalling the current thread 
 	 */
 	public void resumeTraveling(){
+		this.interrupted = false;
+		(new Thread(){
+			public void run(){
+				travelTo(desiredX,desiredY);
+			}
+		}).start();	//start a thread to drive robot to destination
+	}
+	
+	/**
+	 *  To resume last traveling by path without stalling the current thread 
+	 */
+	public void resumeTravelingByPath(){
 		this.interrupted = false;
 		(new Thread(this)).start();	//start a thread to drive robot to destination
 	}
@@ -770,10 +798,18 @@ public class Navigation extends Thread{
 	 * Drive robot to the first grid of the designated zone and face to the second grid 
 	 */
 	public void goZoneDesignated(){
-		this.travelByPath(zoneDesignated.get(0));
-		
+		this.setDest(zoneDesignated.get(0));
+		new Thread(this).start();
 		//******************************check if it need to turn to the second grid in the zone to ensure robot inside the zone
-		
+	}
+	
+	/**
+	 * Drive robot to the starting corner 
+	 */
+	public void goHome(){
+		this.setDest(Main.startCorner.getX(), Main.startCorner.getX());
+		new Thread(this).start();
+		//******************************add more codes to drive robot to the grid!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	}
 	
 	/**
@@ -808,9 +844,12 @@ public class Navigation extends Thread{
 	 * Robot simply rotate to the right without stopping
 	 */
 	public void rotateRight() {
-		this.setSpeeds(SLOW, -SLOW);
+		this.setSpeeds(SACNNNG_SPEED, -SACNNNG_SPEED);
 	}
 	
+	/**
+	 * drive robot forward without stopping 
+	 */
 	public void moveForward(){
 		this.setSpeeds(FAST, FAST);
 	}
