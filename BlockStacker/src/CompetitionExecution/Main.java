@@ -41,19 +41,19 @@ public class Main extends Thread{
 		 * Instantiation for Parameter Interpretation
 		 */
 		ParameterInterpretation parInt = new ParameterInterpretation();
-		/*parInt.interpret();
+		parInt.interpret();
 		
-		*//**
+		/**
 		 * Assign team role and  Set up startCorner
 		 */
-		/*if(BTN==TEAM_NUM){
+		if(BTN==TEAM_NUM){
 			isBuilder = true;
 			startCorner = StartCorner.lookupCorner(BSC);
 		}else{
 			isBuilder = false;
 			startCorner = StartCorner.lookupCorner(CSC);
-		}*/
-
+		}
+		
 		/**
 		 * US declarations
 		 */
@@ -95,19 +95,43 @@ public class Main extends Thread{
 		Localization loc = new Localization(odo,frontUS, lightSensor, leftMotor, rightMotor, nav);
 		ClawHandler claw = new ClawHandler(clawMotor, pulleyMotor, nav);
 		Searching searching = new Searching(nav, frontUS, rightUS);
-		BlockHunter blockHunter = new BlockHunter(nav, frontUS, leftUS, rightUS, claw);
-		
-		
-		
+		BlockHunter blockHunter = new BlockHunter(nav, frontUS, leftUS, rightUS, claw, BlockHunter.State.TRAVELING);
+		/**
+		 * Init timer 
+		 */
+		Timer.startTiming(260);
+		TimeKeeper timeKeeper  = new TimeKeeper(nav, blockHunter);
+		timeKeeper.start();
+
 		/**
 		 * Localize robot
 		 */
 		lcd.initLCD();
-	/*	loc.localize();
+		loc.localize();
 		loc.zeroRobot();
-		Sound.beepSequence();*/
+		odo.setPosition(new double [] {startCorner.getX(),startCorner.getY(),startCorner.getAngle()},
+				new boolean []{true, true, true});
+		Sound.beepSequence();
+		/**
+		 * Travel to zone designated
+		 * Red zone - garbage collector
+		 * Green zone - tower builder
+		 */
+		nav.goZoneDesignated();
+		blockHunter.start();
+		
+		Delay.msDelay(200);
+		/**
+		 * Init borderMonitor
+		 */
+		BorderMonitor borderMonitor = new BorderMonitor(nav, blockHunter);
+		borderMonitor.start();
 		
 		
+		
+		/**
+		 * END COMPETITION EXECUTION CODE
+		 */
 		
 		//TEST startCorner
 	/*	startCorner = StartCorner.lookupCorner(3);
@@ -115,8 +139,7 @@ public class Main extends Thread{
 		*//**
 		 * Set up odometer according to the startCorner received from Wifi
 		 *//*
-		odo.setPosition(new double [] {startCorner.getX(),startCorner.getY(),startCorner.getAngle()},
-				new boolean []{true, true, true});*/
+	
 		
 		
 		//TEST travelTo()
