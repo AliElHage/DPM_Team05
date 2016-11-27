@@ -2,6 +2,7 @@ package CompetitionExecution;
 
 import java.util.ArrayList;
 
+import CompetitionExecution.BlockHunter.State;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
@@ -33,6 +34,7 @@ public class Main extends Thread{
 	private static final Port colorPort = LocalEV3.get().getPort("S4");
 	public static int BTN, BSC, CTN, CSC, LRZx, LRZy, URZx, URZy, LGZx, LGZy, UGZx, UGZy;
 	public static boolean isBuilder;
+	public static StartCorner startCorner;
 	
 	public static void main(String[] args) {
 		/**
@@ -42,14 +44,16 @@ public class Main extends Thread{
 		/*parInt.interpret();
 		
 		*//**
-		 * Assign team role 
-		 *//*
-		if(BTN==TEAM_NUM){
+		 * Assign team role and  Set up startCorner
+		 */
+		/*if(BTN==TEAM_NUM){
 			isBuilder = true;
+			startCorner = StartCorner.lookupCorner(BSC);
 		}else{
 			isBuilder = false;
+			startCorner = StartCorner.lookupCorner(CSC);
 		}*/
-		
+
 		/**
 		 * US declarations
 		 */
@@ -102,10 +106,26 @@ public class Main extends Thread{
 	/*	loc.localize();
 		loc.zeroRobot();
 		Sound.beepSequence();*/
-
 		
 		
-	
+		
+		//TEST startCorner
+	/*	startCorner = StartCorner.lookupCorner(3);
+		
+		*//**
+		 * Set up odometer according to the startCorner received from Wifi
+		 *//*
+		odo.setPosition(new double [] {startCorner.getX(),startCorner.getY(),startCorner.getAngle()},
+				new boolean []{true, true, true});*/
+		
+		
+		//TEST travelTo()
+		/*nav.travelTo(0, 30);
+		nav.travelTo(30, 30);
+		nav.travelTo(60, 60);*/
+		
+		
+		
 		
 		//TEST TRAVELING
 		 /************************************************************
@@ -142,10 +162,8 @@ public class Main extends Thread{
 		nav.travelByPath(map.getGrid(0, 0));
 		*/
 		
-		//TEST SEARCHING
-
-		
-		searching.start();
+		//TEST SEARCHING		
+		/*searching.start();
 		ArrayList<double[]> targets = searching.trackingTargets();
 		searching.stopSearching();
 		for(double[] target: targets){
@@ -158,7 +176,7 @@ public class Main extends Thread{
 				blockHunter.goToFoam();
 				claw.grasp();
 			}
-		}
+		}*/
 		
 
 		
@@ -225,7 +243,6 @@ public class Main extends Thread{
 		
 		
 		//TEST OBJECT DETECTION 
-
 /*		while(true){
 
 			while (Button.waitForAnyPress() != Button.ID_RIGHT);
@@ -237,8 +254,6 @@ public class Main extends Thread{
 			}
 
 		}*/
-
-		
 		
 		//TEST CORRECTION
 		/*correction.start();
@@ -247,18 +262,41 @@ public class Main extends Thread{
 		nav.travelTo(0, 0);*/
 		
 		
-
 		//TEST wifi instruction
 		/*FieldMap map = nav.getFieldMap();
 		nav.goZoneDesignated();				//robot should go to the green zone 
 		nav.travelByPath(map.getGrid(0, 2));	//robot should avoid red zone 
 		 */		
 
+		
 		//TEST AVOIDANCE
-		/*Avoidance av = new Avoidance(nav, odo, leftUS, rightUS, frontUS);
-		av.start();
-		nav.setDest(0, 90);
-		new Thread(nav).start();*/
+		/*TestAvoidance avoi = new TestAvoidance(nav, frontUS, rightUS);
+		blockHunter.approachTo();
+		avoi.start();*/
+		
+		
+		//TEST AVOIDANCE in NAVIGATION 
+		/*TestAvoidance avoidance = null;
+		nav.setDest(60, 60);
+		new Thread(nav).start();
+		while(true){
+			if(frontUS.readUSDistance() < 25){
+				blockHunter.approachTo(); // approach to the object to be ready for object classification
+				if (!blockHunter.isObstacle()) {
+					// if target is a styrofoam, then grasp it
+					Sound.beep();
+					claw.grasp(); 								
+					nav.resumeTraveling();	//recall TravelTo with dest set before
+				}else{
+					// if target is a wooden block, then avoid it 
+					nav.turn(90);
+					avoidance = new TestAvoidance(nav, frontUS, rightUS); 
+					avoidance.start(); 
+					while(!avoidance.handled());
+					nav.resumeTraveling();
+				}
+			}
+		}*/
 
 		
 		
