@@ -83,19 +83,18 @@ public class Main extends Thread{
 		USPoller frontUS = new USPoller(usValueFront, usDataFront);
 		
 		lightSensor.start();
-		rightUS.start();
-		leftUS.start();
 		frontUS.start();
 		
 		
 		Odometer odo = new Odometer(leftMotor, rightMotor, 30, true);
 		Navigation nav = new Navigation(odo);
-		OdometryCorrection correction = new OdometryCorrection(nav, odo, lightSensor);
+//		OdometryCorrection correction = new OdometryCorrection(nav, odo, lightSensor);
 		LCDInfo lcd = new LCDInfo(odo, frontUS, leftUS, rightUS);
-		Localization loc = new Localization(odo, rightUS, leftUS, frontUS, lightSensor, leftMotor, rightMotor, nav);
-		ClawHandler claw = new ClawHandler(clawMotor, pulleyMotor, nav);
-		Searching searching = new Searching(nav, frontUS, rightUS);
-		BlockHunter blockHunter = new BlockHunter(nav, frontUS, leftUS, rightUS, claw);
+//		rightUS, leftUS, 
+		Localization loc = new Localization(odo,frontUS, lightSensor, leftMotor, rightMotor, nav);
+//		ClawHandler claw = new ClawHandler(clawMotor, pulleyMotor, nav);
+//		Searching searching = new Searching(nav, frontUS, rightUS);
+//		BlockHunter blockHunter = new BlockHunter(nav, frontUS, leftUS, rightUS, claw);
 		
 		
 		
@@ -123,8 +122,6 @@ public class Main extends Thread{
 		/*nav.travelTo(0, 30);
 		nav.travelTo(30, 30);
 		nav.travelTo(60, 60);*/
-		
-		
 		
 		
 		//TEST TRAVELING
@@ -162,6 +159,7 @@ public class Main extends Thread{
 		nav.travelByPath(map.getGrid(0, 0));
 		*/
 		
+
 		//TEST SEARCHING		
 		/*searching.start();
 		ArrayList<double[]> targets = searching.trackingTargets();
@@ -297,6 +295,7 @@ public class Main extends Thread{
 				}
 			}
 		}*/
+
 
 		
 		
