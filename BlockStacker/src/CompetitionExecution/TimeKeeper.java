@@ -9,10 +9,11 @@ package CompetitionExecution;
 public class TimeKeeper extends Thread{
 	
 	private Navigation nav;
-	private StartCorner startCorner;
+	private BlockHunter hunter;
 	
-	public TimeKeeper(StartCorner startCorner){
-		this.startCorner = startCorner;
+	public TimeKeeper(Navigation nav, BlockHunter blockHunter){
+		this.nav = nav;
+		this.hunter = blockHunter;
 	}
 	
 	public void run(){
@@ -20,8 +21,10 @@ public class TimeKeeper extends Thread{
 			
 			if(Timer.timeLeft() < 60){
 				nav.interruptTraveling();
+				hunter.stopHunting();
 				BorderMonitor.stopChecking();
-				nav.travelTo(startCorner.getX(), startCorner.getY());	//fix later, should travel to the center of grid ***********
+				nav.goHome();	//fix later, should travel to the center of grid ***********
+				return;
 			}
 		}
 	}
