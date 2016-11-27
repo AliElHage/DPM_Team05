@@ -30,8 +30,8 @@ public class Localization {
 	private USPoller rightUS, leftUS, frontUS;
 	private int threshDist = 20;
 	private int wallThresh = 40;
-	private int correctionAngRight = 13;
-	private int correctionAngLeft = 13;
+	private int correctionAngRight = 15;
+	private int correctionAngLeft = 15;
 	
 	/**
 	 * light sensor localization specific variables
@@ -52,12 +52,15 @@ public class Localization {
 	 * @param rightMotor right motor used to physically move robot
 	 * @param navigator same navigator to be used for moving robot in localize() and zeroRobot() methods
 	 */
-	public Localization(Odometer odo,  USPoller rightUS, USPoller leftUS, USPoller frontUS,
+	//USPoller rightUS, USPoller leftUS, 
+	
+	public Localization(Odometer odo,  
+			USPoller frontUS,
 			LightPoller lightSensor, EV3LargeRegulatedMotor leftMotor, 
 			EV3LargeRegulatedMotor rightMotor, Navigation navigator) {
 		this.odo = odo;
-		this.rightUS = rightUS;
-		this.leftUS = leftUS;
+//		this.rightUS = rightUS;
+//		this.leftUS = leftUS;
 		this.frontUS = frontUS;
 		this.lightSensor = lightSensor;
 		this.leftMotor = leftMotor;
@@ -70,130 +73,158 @@ public class Localization {
 	 * the robot much turn for the US sensor to be within the threshold distance from each of the walls
 	 */
 	public void localize() {
-		double angleA, angleB, angleAvg;
+		
+double angleA, angleB, angleAvg;
 		
 		leftMotor.setSpeed(ROTATION_SPEED);
 		rightMotor.setSpeed(ROTATION_SPEED);
+		
 			
-			Delay.msDelay(200);
-			
-			/** 
-			 * if the robot starts facing a wall, turn it 180 degrees so it has passed
-			 * the appointed threshold distance, then start rising edge procedure
+		/* if the robot starts facing a wall, turn it 180 degrees so it has passed
+		 * the appointed threshold distance, then start rising edge procedure
+		 */
+		if (frontUS.readUSDistance() <= threshDist) {
+			/*
+			 * The robot should turn until it sees the wall, then look for the
+			 * "rising edges:" the points where it no longer sees the wall.
+			 * This is very similar to the FALLING_EDGE routine, but the robot
+			 * will face toward the wall for most of it.
 			 */
-			if (frontUS.readUSDistance() <= wallThresh) {
-				leftMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 180), true);
-				rightMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 180), false);
 			
-			}
+			rightMotor.setSpeed(ROTATION_SPEED);
+			leftMotor.setSpeed(ROTATION_SPEED);
 			
-			/**
-			 * start turning in direction in which side sensor is farther from the wall
-			 */
-			if(rightUS.readUSDistance() > leftUS.readUSDistance()) {
-				
-				leftTurnToZero = false;
-				
-				/**
-				 * start rising edge procedure by turning robot
-				 */
+			/* if the robot starts facing a wall, turn it until it has passed
+			 * the appointed threshold distance of 35cm, then start falling edge procedure
+			 */			
+			if(frontUS.readUSDistance() >= threshDist){
+				//turn the robot clockwise
 				leftMotor.forward();
 				rightMotor.backward();
 				
-				/** 
-				 * continuously check left sensor for a wall while turning, if 
-				 * one is found, beep, then stop the robot and record the angle 
-				 * it is at in angleA, the first angle used for angular 
-				 * positioning, then continue the procedure
-				 */
-				while (true) {
-					if(rightUS.readUSDistance() <= threshDist){
-						Sound.beep();
-						navigator.stopMoving();
-						if(odo.getAng() < 270) {
-							angleA = 270 + odo.getAng();
-						} else {
-							angleA = odo.getAng() - 90;
-						}
+				while (true){
+					if(frontUS.readUSDistance() <= threshDist){
+						leftMotor.stop();
+						rightMotor.stop();
 						break;
 					}
 				}
+			}
+			
+			/* stop checking for distance from wall while the robot turns 45 degrees 
+			 * to ensure that the sensor does not stop rotation too early
+			 */
+			leftMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 45), true);
+			rightMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 45), false);
+			
+			//start normal turning clockwise
+			leftMotor.forward();
+			rightMotor.backward();
+			
+			/* continuously check for a distance farther than the threshold of
+			 * 35cm while turning, if one is found, beep, then stop the robot
+			 * and record the angle it is at in angleA, the first angle used for
+			 * angular positioning
+			 */
+			while (true){
+				if(frontUS.readUSDistance() > threshDist){
+					Sound.beep();
+					leftMotor.stop();
+					rightMotor.stop();
+					angleA = odo.getAng();
+					break;
+				}
+			}
+			
+			/* Turn toward the wall a bit to ensure the sensor detects the wall
+			 * properly and does not accidentally detect it is farther than the
+			 * threshold
+			 */
+			leftMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 45), true);
+			rightMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 45), false);
+			
+			//start normal turning counterclockwise
+			leftMotor.backward();
+			rightMotor.forward();
+			
+			/* continuously check for a distance farther than the threshold of
+			 * 35cm while turning, if one is found, beep, then stop the robot
+			 * and record the angle it is at in angleB, the second angle used for
+			 * angular positioning
+			 */			
+			while (true){
+				if(frontUS.readUSDistance() > threshDist){
+					Sound.beep();
+					rightMotor.stop();
+					leftMotor.stop();
+					angleB = odo.getAng();
+					break;
+				}
+			}
+			
+			//calculations for average angle based on formulas given in slides
+			if(angleA > angleB){
+				angleAvg = 225 - (angleA + angleB)/2;
+			}
+			else{
+				angleAvg =  45 - (angleA + angleB)/2;
+			}
+			double ang = angleA+angleAvg;
+			LCD.drawString("Pos: " + ang , 0, 6);
+			
+			odo.setPosition(new double [] {0.0, 0.0, angleA + angleAvg}, new boolean []{true, true, true});
+			
+			//turn robot to face along the X-axis
+			navigator.turnTo(180, true);
+			
+		
+		} else {
+		
+			//start rising edge procedure by turning robot
+			leftMotor.forward();
+			rightMotor.backward();
+			
+			/* continuously check for a wall while turning, if one is found, 
+			 * beep, then stop the robot and record the angle it is at in 
+			 * angleA, the first angle used for angular positioning, then 
+			 * continue the procedure
+			 */
+			while (true) {
+				if(frontUS.readUSDistance() <= threshDist){
+					Sound.beep();
+					leftMotor.stop();
+					rightMotor.stop();
+					angleA = odo.getAng();
+					break;
+				}
+			}
+			
+			
+			/* stop checking for distance from wall while the robot turns 90 degrees 
+			 * to ensure that the sensor does not stop rotation too early
+			 */
+			leftMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 90), true);
+			rightMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 90), false);
 	
-				navigator.setSpeeds(ROTATION_SPEED, ROTATION_SPEED);
-				
-				/**
-				 * start normal turning clockwise
-				 */
-				rightMotor.forward();
-				leftMotor.backward();
-				
-				/** 
-				 * continuously check right sensor for a wall while turning, if 
-				 * one is found, beep, then stop the robot and record the angle 
-				 * it is at in angleB, the second angle used for angular positioning
-				 */
-				while (true){
-					if(leftUS.readUSDistance() <= threshDist){
-						Sound.beep();
-						navigator.stopMoving();
-						angleB = 90 + odo.getAng();
-						break;
-					}
-				}	
-			} else {
-				
-				leftTurnToZero = true;
-				
-				/**
-				 * start rising edge procedure by turning robot
-				 */
-				rightMotor.forward();
-				leftMotor.backward();
-				
-				/** 
-				 * continuously check right sensor for a wall while turning, if 
-				 * one is found, beep, then stop the robot and record the angle 
-				 * it is at in angleA, the first angle used for angular positioning
-				 */
-				while (true) {
-					if(leftUS.readUSDistance() <= threshDist){
-						Sound.beep();
-						navigator.stopMoving();
-						if(odo.getAng() < 270) {
-							angleA = 270 + odo.getAng();
-						} else {
-							angleA = odo.getAng() - 90;
-						}
-						break;
-					}
-				}
-				
-				navigator.setSpeeds(ROTATION_SPEED, ROTATION_SPEED);
-				
-				/**
-				 * start normal turning couterclockwise 
-				 */
-				leftMotor.forward();
-				rightMotor.backward();
-				
-				/** 
-				 * continuously check left sensor for a wall while turning, if 
-				 * one is found, beep, then stop the robot and record the angle 
-				 * it is at in angleB, the second angle used for angular positioning
-				 */
-				while (true){
-					if(rightUS.readUSDistance() <= threshDist){
-						Sound.beep();
-						navigator.stopMoving();
-						angleB = 90 + odo.getAng();
-						break;
-					}
+			//start normal turning clockwise
+			rightMotor.forward();
+			leftMotor.backward();
+			
+			/* continuously check for a wall while turning, if one is found, beep,
+			 * then stop the robot and record the angle it is at in angleB,
+			 * the second angle used for angular positioning
+			 */
+			while (true){
+				if(frontUS.readUSDistance() <= threshDist){
+					Sound.beep();
+					leftMotor.stop();
+					rightMotor.stop();
+					angleB = odo.getAng();
+					break;
 				}
 			}
 			
-			/**
-			 * calculations for average angle based on formulas given in slides
-			 */
+			//calculations for average angle based on formulas given in slides
 			if (angleA > angleB){
 				angleAvg = 225 - (angleA + angleB)/2;
 			}
@@ -201,21 +232,161 @@ public class Localization {
 				angleAvg =  45 - (angleA + angleB)/2;
 			}
 			
-			LCD.drawString("Avg: " + angleAvg, 0, 4);
-			LCD.drawString("Avg+B: " + (angleAvg+angleB), 0, 5);
+			odo.setPosition(new double [] {0.0, 0.0, angleB + angleAvg}, new boolean []{true, true, true});
 			
-			if(leftTurnToZero) {
-				odo.setPosition(new double [] {0.0, 0.0, (angleAvg + angleB - 90 + correctionAngLeft)}, new boolean []{true, true, true});
-				navigator.setSpeeds(LEFT_TURN_SPEED, LEFT_TURN_SPEED);
-			} else {
-				odo.setPosition(new double [] {0.0, 0.0, (angleAvg + angleB - 90 + correctionAngRight)}, new boolean []{true, true, true});
-				navigator.setSpeeds(ROTATION_SPEED, ROTATION_SPEED);
-			}
-			
-			/**
-			 * turn robot to face along the Y-axis
-			 */
+			//turn robot to face along the X-axis
 			navigator.turnTo(0, true);
+		}
+		
+		
+		
+		
+//		double angleA, angleB, angleAvg;
+//		
+//		leftMotor.setSpeed(ROTATION_SPEED);
+//		rightMotor.setSpeed(ROTATION_SPEED);
+//			
+//			Delay.msDelay(200);
+//			
+//			/** 
+//			 * if the robot starts facing a wall, turn it 180 degrees so it has passed
+//			 * the appointed threshold distance, then start rising edge procedure
+//			 */
+//			if (frontUS.readUSDistance() <= wallThresh) {
+//				leftMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 180), true);
+//				rightMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 180), false);
+//			
+//			}
+//			
+//			/**
+//			 * start turning in direction in which side sensor is farther from the wall
+//			 */
+//			if(rightUS.readUSDistance() > leftUS.readUSDistance()) {
+//				
+//				leftTurnToZero = false;
+//				
+//				/**
+//				 * start rising edge procedure by turning robot
+//				 */
+//				leftMotor.forward();
+//				rightMotor.backward();
+//				
+//				/** 
+//				 * continuously check left sensor for a wall while turning, if 
+//				 * one is found, beep, then stop the robot and record the angle 
+//				 * it is at in angleA, the first angle used for angular 
+//				 * positioning, then continue the procedure
+//				 */
+//				while (true) {
+//					if(rightUS.readUSDistance() <= threshDist){
+//						Sound.beep();
+//						navigator.stopMoving();
+//						if(odo.getAng() < 270) {
+//							angleA = 270 + odo.getAng();
+//						} else {
+//							angleA = odo.getAng() - 90;
+//						}
+//						break;
+//					}
+//				}
+//	
+//				navigator.setSpeeds(ROTATION_SPEED, ROTATION_SPEED);
+//				
+//				/**
+//				 * start normal turning clockwise
+//				 */
+//				rightMotor.forward();
+//				leftMotor.backward();
+//				
+//				/** 
+//				 * continuously check right sensor for a wall while turning, if 
+//				 * one is found, beep, then stop the robot and record the angle 
+//				 * it is at in angleB, the second angle used for angular positioning
+//				 */
+//				while (true){
+//					if(leftUS.readUSDistance() <= threshDist){
+//						Sound.beep();
+//						navigator.stopMoving();
+//						angleB = 90 + odo.getAng();
+//						break;
+//					}
+//				}	
+//			} else {
+//				
+//				leftTurnToZero = true;
+//				
+//				/**
+//				 * start rising edge procedure by turning robot
+//				 */
+//				rightMotor.forward();
+//				leftMotor.backward();
+//				
+//				/** 
+//				 * continuously check right sensor for a wall while turning, if 
+//				 * one is found, beep, then stop the robot and record the angle 
+//				 * it is at in angleA, the first angle used for angular positioning
+//				 */
+//				while (true) {
+//					if(leftUS.readUSDistance() <= threshDist){
+//						Sound.beep();
+//						navigator.stopMoving();
+//						if(odo.getAng() < 270) {
+//							angleA = 270 + odo.getAng();
+//						} else {
+//							angleA = odo.getAng() - 90;
+//						}
+//						break;
+//					}
+//				}
+//				
+//				navigator.setSpeeds(ROTATION_SPEED, ROTATION_SPEED);
+//				
+//				/**
+//				 * start normal turning couterclockwise 
+//				 */
+//				leftMotor.forward();
+//				rightMotor.backward();
+//				
+//				/** 
+//				 * continuously check left sensor for a wall while turning, if 
+//				 * one is found, beep, then stop the robot and record the angle 
+//				 * it is at in angleB, the second angle used for angular positioning
+//				 */
+//				while (true){
+//					if(rightUS.readUSDistance() <= threshDist){
+//						Sound.beep();
+//						navigator.stopMoving();
+//						angleB = 90 + odo.getAng();
+//						break;
+//					}
+//				}
+//			}
+//			
+//			/**
+//			 * calculations for average angle based on formulas given in slides
+//			 */
+//			if (angleA > angleB){
+//				angleAvg = 225 - (angleA + angleB)/2;
+//			}
+//			else{
+//				angleAvg =  45 - (angleA + angleB)/2;
+//			}
+//			
+//			LCD.drawString("Avg: " + angleAvg, 0, 4);
+//			LCD.drawString("Avg+B: " + (angleAvg+angleB), 0, 5);
+//			
+//			if(leftTurnToZero) {
+//				odo.setPosition(new double [] {0.0, 0.0, (angleAvg + angleB - 90 + correctionAngLeft)}, new boolean []{true, true, true});
+//				navigator.setSpeeds(LEFT_TURN_SPEED, LEFT_TURN_SPEED);
+//			} else {
+//				odo.setPosition(new double [] {0.0, 0.0, (angleAvg + angleB - 90 + correctionAngRight)}, new boolean []{true, true, true});
+//				navigator.setSpeeds(ROTATION_SPEED, ROTATION_SPEED);
+//			}
+//			
+//			/**
+//			 * turn robot to face along the Y-axis
+//			 */
+//			navigator.turnTo(0, true);
 	}
 
 	/**
