@@ -11,18 +11,27 @@ package CompetitionExecution;
 public class BorderMonitor extends Thread{
 	
 	private Navigation nav;
+	private BlockHunter hunter;
 	private static boolean isDone;
 	
-	public BorderMonitor(){
+	public BorderMonitor(Navigation nav, BlockHunter blockHunter){
+		this.nav = nav;
+		this.hunter =blockHunter;
 		isDone = false;
 	}
 	
 	
 	public void run(){
 		while(!isDone){
-			if(nav.odometer.getX() < 0 || nav.odometer.getX() > 300 || 
+			if(nav.odometer.getX() < 0 || nav.odometer.getX() > 300 || 			// if robot has crossed the map border 
 					nav.odometer.getY() < 0 || nav.odometer.getY() > 300){
-				nav.interruptTraveling();//add in more action later *********************************************8
+				nav.interruptTraveling();
+				hunter.stopHunting();
+				if(hunter.foamsCaptured()){		//	if robot has captured foams 
+					stopChecking();			
+					
+				}
+				
 			}
 		}
 	}
