@@ -57,9 +57,9 @@ public class Avoidance extends Thread{
 //		handle = true;
 //	}
 //
-//	public boolean handled(){
-//		return handle;
-//	}
+public boolean handled(){
+	return handle;
+	}
 	
 	public void run() {
 		rightDist = rightUS.readUSDistance();
