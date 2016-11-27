@@ -65,7 +65,7 @@ public class Navigation extends Thread{
 	public void run(){
 		while(!checkDone() && !interrupted){	//keep running following codes if travelTo is not done or not interrupted
 			this.travelByPath(desiredX, desiredY);
-			this.travelTo(desiredX, desiredY);
+			//this.travelTo(desiredX, desiredY);
 		}
 	}
 	

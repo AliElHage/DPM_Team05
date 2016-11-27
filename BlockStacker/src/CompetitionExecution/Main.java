@@ -99,44 +99,44 @@ public class Main extends Thread{
 		/**
 		 * Init timer 
 		 */
-		Timer.startTiming(260);
+/*		Timer.startTiming(260);
 		TimeKeeper timeKeeper  = new TimeKeeper(nav, blockHunter);
-		timeKeeper.start();
+		timeKeeper.start();*/
 
 		/**
 		 * Localize robot
 		 */
-		lcd.initLCD();
+/*		lcd.initLCD();
 		loc.localize();
 		loc.zeroRobot();
 		odo.setPosition(new double [] {startCorner.getX(),startCorner.getY(),startCorner.getAngle()},
 				new boolean []{true, true, true});
 		Sound.beepSequence();
-		/**
+		*//**
 		 * Travel to zone designated
 		 * Red zone - garbage collector
 		 * Green zone - tower builder
-		 */
+		 *//*
 		nav.goZoneDesignated();
 		blockHunter.start();
 		
 		Delay.msDelay(200);
-		/**
+		*//**
 		 * Init borderMonitor
-		 */
+		 *//*
 		BorderMonitor borderMonitor = new BorderMonitor(nav, blockHunter);
 		borderMonitor.start();
 		
-		
+		*/
 		
 		/**
 		 * END COMPETITION EXECUTION CODE
 		 */
 		
 		//TEST startCorner
-	/*	startCorner = StartCorner.lookupCorner(3);
+		/*startCorner = StartCorner.lookupCorner(3);*/
 		
-		*//**
+		/**
 		 * Set up odometer according to the startCorner received from Wifi
 		 *//*
 	
@@ -203,16 +203,18 @@ public class Main extends Thread{
 
 		
 		//TEST NAVIGATION
-		/*odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});
-		nav.setDest(40, 50);
+		map.zoneBlocked(1, 1, 2, 2);
+		
+		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});
+		nav.setDest(map.getGrid(2, 2));
 		new Thread(nav).start();
 		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		nav.setDest(70, 20);
-		new Thread(nav).start();*/
+		nav.setDest(map.getGrid(2, 0));
+		new Thread(nav).start();
 		
 		
 		//TEST CALCPATH
-		//case 1 Right(Lower) Path
+//		case 1 Right(Lower) Path
 //		map.getGrid(1,2).setBlocked();
 //		map.getGrid(1, 1).setBlocked();
 //		nav.travelByPath(map.getGrid(2, 2));
@@ -292,12 +294,12 @@ public class Main extends Thread{
 
 		
 		//TEST AVOIDANCE
-		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});
+/*		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});
 		
 		TestAvoidance avoi = new TestAvoidance(nav, frontUS, rightUS);
 		blockHunter.approachTo();
 		avoi.start();
-		
+		*/
 		
 		//TEST AVOIDANCE in NAVIGATION 
 		/*TestAvoidance avoidance = null;
