@@ -18,6 +18,7 @@ public class ClawHandler {
 	private double angleToRelease, angleToLift, angleToSet;	// amount by which to move the claws from their initial position for pulley	
 	private EV3LargeRegulatedMotor pulleyMotor, clawMotor;	// all claw-related motors
 	private int counter;									// counts the amount of blocks stacked
+	private static int foamsCaptured;
 	
 	// NB FOR PULLEYSPEED: a negative speed is for lowering the claw; positive otherwise
 	// NB FOR CLAWSOPENANGLE: a negative angle is for grabbing; releasing otherwise
@@ -35,6 +36,7 @@ public class ClawHandler {
 		this.clawMotor.setSpeed(clawSpeed);
 		this.pulleyMotor.rotate(-3);
 		this.open();
+		foamsCaptured = 0;
 	}
 
 	
@@ -108,6 +110,7 @@ public class ClawHandler {
 			
 			// count block
 			counter++;
+			foamsCaptured++;
 			return;
 		}
 		
@@ -124,6 +127,7 @@ public class ClawHandler {
 		// lift blocks up
 		this.pullUp();
 		counter++;
+		foamsCaptured++;
 	}
 	
 	/** Safely releases the tower on the ground.<br />
@@ -169,8 +173,8 @@ public class ClawHandler {
 	
 	
 	/** Gets the amount of blocks held by the robot. */
-	public int getCounter(){
-		return this.counter;
+	public static int getfoamsCaptured(){
+		return foamsCaptured;
 	}
 	
 }
