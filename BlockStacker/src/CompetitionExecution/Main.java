@@ -84,17 +84,18 @@ public class Main extends Thread{
 		
 		lightSensor.start();
 		frontUS.start();
+		rightUS.start();
+		leftUS.start();
 		
 		
 		Odometer odo = new Odometer(leftMotor, rightMotor, 30, true);
 		Navigation nav = new Navigation(odo);
 //		OdometryCorrection correction = new OdometryCorrection(nav, odo, lightSensor);
 		LCDInfo lcd = new LCDInfo(odo, frontUS, leftUS, rightUS);
-//		rightUS, leftUS, 
 		Localization loc = new Localization(odo,frontUS, lightSensor, leftMotor, rightMotor, nav);
-//		ClawHandler claw = new ClawHandler(clawMotor, pulleyMotor, nav);
-//		Searching searching = new Searching(nav, frontUS, rightUS);
-//		BlockHunter blockHunter = new BlockHunter(nav, frontUS, leftUS, rightUS, claw);
+		ClawHandler claw = new ClawHandler(clawMotor, pulleyMotor, nav);
+		Searching searching = new Searching(nav, frontUS, rightUS);
+		BlockHunter blockHunter = new BlockHunter(nav, frontUS, leftUS, rightUS, claw);
 		
 		
 		
@@ -268,9 +269,11 @@ public class Main extends Thread{
 
 		
 		//TEST AVOIDANCE
-		/*TestAvoidance avoi = new TestAvoidance(nav, frontUS, rightUS);
+		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});
+		
+		TestAvoidance avoi = new TestAvoidance(nav, frontUS, rightUS);
 		blockHunter.approachTo();
-		avoi.start();*/
+		avoi.start();
 		
 		
 		//TEST AVOIDANCE in NAVIGATION 
