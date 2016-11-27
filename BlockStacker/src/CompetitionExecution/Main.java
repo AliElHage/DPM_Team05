@@ -79,19 +79,18 @@ public class Main extends Thread{
 		USPoller frontUS = new USPoller(usValueFront, usDataFront);
 		
 		lightSensor.start();
-		rightUS.start();
-		leftUS.start();
 		frontUS.start();
 		
 		
 		Odometer odo = new Odometer(leftMotor, rightMotor, 30, true);
 		Navigation nav = new Navigation(odo);
-		OdometryCorrection correction = new OdometryCorrection(nav, odo, lightSensor);
+//		OdometryCorrection correction = new OdometryCorrection(nav, odo, lightSensor);
 		LCDInfo lcd = new LCDInfo(odo, frontUS, leftUS, rightUS);
-		Localization loc = new Localization(odo, rightUS, leftUS, frontUS, lightSensor, leftMotor, rightMotor, nav);
-		ClawHandler claw = new ClawHandler(clawMotor, pulleyMotor, nav);
-		Searching searching = new Searching(nav, frontUS, rightUS);
-		BlockHunter blockHunter = new BlockHunter(nav, frontUS, leftUS, rightUS, claw);
+//		rightUS, leftUS, 
+		Localization loc = new Localization(odo,frontUS, lightSensor, leftMotor, rightMotor, nav);
+//		ClawHandler claw = new ClawHandler(clawMotor, pulleyMotor, nav);
+//		Searching searching = new Searching(nav, frontUS, rightUS);
+//		BlockHunter blockHunter = new BlockHunter(nav, frontUS, leftUS, rightUS, claw);
 		
 		
 		
@@ -99,12 +98,13 @@ public class Main extends Thread{
 		 * Localize robot
 		 */
 		lcd.initLCD();
-	/*	loc.localize();
-		loc.zeroRobot();
-		Sound.beepSequence();*/
+		loc.localize();
+//		loc.zeroRobot();
+//		Sound.beepSequence();
 
 		
-		
+		rightUS.start();
+		leftUS.start();	
 	
 		
 		//TEST TRAVELING
@@ -145,20 +145,20 @@ public class Main extends Thread{
 		//TEST SEARCHING
 
 		
-		searching.start();
-		ArrayList<double[]> targets = searching.trackingTargets();
-		searching.stopSearching();
-		for(double[] target: targets){
-			nav.turnToDest(target[0], target[1]);
-			blockHunter.approachTo();
-			if(blockHunter.isObstacle()){
-				Sound.beepSequence();
-			}else{
-				Sound.beep();
-				blockHunter.goToFoam();
-				claw.grasp();
-			}
-		}
+//		searching.start();
+//		ArrayList<double[]> targets = searching.trackingTargets();
+//		searching.stopSearching();
+//		for(double[] target: targets){
+//			nav.turnToDest(target[0], target[1]);
+//			blockHunter.approachTo();
+//			if(blockHunter.isObstacle()){
+//				Sound.beepSequence();
+//			}else{
+//				Sound.beep();
+//				blockHunter.goToFoam();
+//				claw.grasp();
+//			}
+//		}
 		
 
 		
@@ -255,10 +255,10 @@ public class Main extends Thread{
 		 */		
 
 		//TEST AVOIDANCE
-		/*Avoidance av = new Avoidance(nav, odo, leftUS, rightUS, frontUS);
-		av.start();
-		nav.setDest(0, 90);
-		new Thread(nav).start();*/
+//		Avoidance av = new Avoidance(nav, odo, leftUS, rightUS, frontUS);
+//		av.start();
+//		nav.setDest(0, 90);
+//		new Thread(nav).start();
 
 		
 		
