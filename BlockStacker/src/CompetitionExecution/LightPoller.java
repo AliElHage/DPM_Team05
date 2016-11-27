@@ -49,10 +49,9 @@ public class LightPoller extends Thread{
 	/**
 	 * polls color sensor to get the data to see if it passes over a line.
 	 * returns a boolean true if it does cross a line.
+	 * @return boolean true if a line is deteced
 	 */
 	public boolean lineCrossed(){
-//		colorSensor.fetchSample(colorData, 0);
-		
 		if(colorReading < 30){
 			return true;
 		}

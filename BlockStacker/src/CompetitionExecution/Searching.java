@@ -36,7 +36,7 @@ public class Searching extends Thread{
 		while(!searchingDone){
 			nav.turnCircle(); // let robot first rotates certain amount of degree for later checking if it has turned 360
 			//nav.scoutZone();	// move to next spot to continue searching if robot hasn't found enough targets after sweeping 
-			nav.goForward(15);		//***********************************************************			
+			nav.goForward(15);		//***********************************************************	
 		}
 	}
 	

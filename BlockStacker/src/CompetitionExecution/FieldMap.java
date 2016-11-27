@@ -139,7 +139,7 @@ public class FieldMap {
 	 * @param UZy upper right y
 	 * @return a collection of grids  which depict the border
 	 */
-	public ArrayList<Grid> getBorder(int LZx, int LZy, int UZx, int UZy){
+	public ArrayList<Grid> getZoneBorder(int LZx, int LZy, int UZx, int UZy){
 		ArrayList<Grid> largerZone = this.getZone(LZx-1, LZy-1, UZx+1, UZy+1);
 		ArrayList<Grid> zone = this.getZone(LZx, LZy, UZx, UZy);
 		for(Grid grid:zone){
