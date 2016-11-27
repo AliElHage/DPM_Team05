@@ -11,16 +11,17 @@
 package CompetitionExecution;
 
 public enum StartCorner {
-	BOTTOM_LEFT(1, 0, 0, "BL"), BOTTOM_RIGHT(2, 300, 0, "BR"), TOP_RIGHT(3, 300, 300, "TR"), TOP_LEFT(4, 0, 300,
-			"TL"), NULL(0, 0, 0, "NULL");
+	BOTTOM_LEFT(1, 0, 0, 0, "BL"), BOTTOM_RIGHT(2, 300, 0, 90, "BR"), TOP_RIGHT(3, 300, 300, 180, "TR"), 
+	TOP_LEFT(4, 0, 300, 270, "TL"), NULL(0, 0, 0, 0, "NULL");
 
-	private int id, x, y;
+	private int id, x, y, angle;
 	private String name;
 
-	private StartCorner(int id, int x, int y, String name) {
+	private StartCorner(int id, int x, int y, int angle, String name) {
 		this.id = id;
 		this.x = x;
 		this.y = y;
+		this.angle = angle;
 		this.name = name;
 	}
 
@@ -38,6 +39,10 @@ public enum StartCorner {
 
 	public int getY() {
 		return this.y;
+	}
+	
+	public int getAngle() {
+		return this.angle;
 	}
 
 	public int getId() {
