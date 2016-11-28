@@ -7,11 +7,11 @@ import lejos.utility.Delay;
 
 public class BlockHunter extends Thread{
 	
-	enum State {INIT, SEARCHING, TRAVELING, AVOIDING}		//define three states of robot when it is hunting
+	enum State {INIT, SEARCHING, TRAVELING, AVOIDING, DRIVING}		//define three states of robot when it is hunting
 	
 	final static int ACCELERATION=4000, SPEED_NORMAL=200;
-	final static double TARGET_DIS=12.5, OBJECT_DIS=40, GRASP_DIS= 6.7, VISION_DIS= 25;
-	final static double  DETECTION_OFFSET= 4.3;
+	final static double TARGET_DIS=6.2, OBJECT_DIS=40, GRASP_DIS= 6.7, VISION_DIS= 25;
+	final static double  DETECTION_OFFSET= 12.5;
 	private Navigation nav;
 	private USPoller frontUS, leftUS, rightUS;
 	private ClawHandler claw; 
@@ -83,6 +83,10 @@ public class BlockHunter extends Thread{
 				break;
 			
 			case SEARCHING:	
+				if(foamsCaptured()){			//if robot has captured foam blocks 
+					nav.goZoneDesignated();   	//go to zone designated 
+					state = State.TRAVELING;
+				}
 				if(destinations.isEmpty()){
 					state = State.SEARCHING;
 					break;
@@ -117,7 +121,7 @@ public class BlockHunter extends Thread{
 						// if target is a styrofoam, then grasp it
 						Sound.beep();
 						claw.grasp(); 								
-						nav.resumeTraveling();	//recall TravelTo with dest set before
+						nav.resumeTravelingByPath();	//recall TravelTo with dest set before
 					}else{
 						// if target is a wooden block, then avoid it 
 						markBlockFront();
@@ -130,12 +134,29 @@ public class BlockHunter extends Thread{
 				}else if(!foamsCaptured()){		//if robot hasnt captured foam blocks yet, set up searching
 					state = State.INIT;
 				}else{
-					return;						//if robot has got back to the starting corner then return 
+					claw.releaseTower(); 		// release all the foam block 
+					nav.goHome();
+					state = State.DRIVING;		//if robot has complete mission go to driving state  
 				}
 				break;
 			
+			case DRIVING:			//Driving state will avoid anything encouter 
+				if(checkFront()){				//when detect something in the front
+					nav.interruptTraveling();				
+					this.approachTo(); // approach to the object to be ready for avodiacne 
+					avoidance = new TestAvoidance(nav, frontUS, rightUS); 
+					avoidance.start(); 		
+					state = State.AVOIDING;		//set to avoiding mode		
+				}else if(!nav.checkDone()){
+					nav.resumeTraveling(); 
+				}else{
+					return;
+				}
+				
+			
 			case AVOIDING:
 				if(avoidance.handled()){
+					nav.resumeTravelingByPath();
 					state = State.TRAVELING;
 				}
 				break;
@@ -199,10 +220,19 @@ public class BlockHunter extends Thread{
 	}
 	
 	/**
-	 * Turn off hunting stateMachine and should creat a new Hunter thread to resume 
+	 * Turn off hunting stateMachine and should create a new Hunter thread to resume 
 	 */
 	public void stopHunting(){
 		this.isHunting = false;
+	}
+	
+	/**
+	 * Resume hunting by passing a start state
+	 * @param state
+	 */
+	public void resumeHunting(State state){
+		this.setState(state);
+		new Thread(this).start();
 	}
 	
 	
@@ -219,23 +249,32 @@ public class BlockHunter extends Thread{
 	 * @return boolean
 	 */
 	public boolean isObstacle(){
-		nav.turn(-90);     		// rotate the robot to check the object by right side US sensor
-		nav.goBackward(DETECTION_OFFSET);//let robot move backward a bit to ensure robot to detect the same spot as front
-		Delay.msDelay(100); 	// wait 100ms to set up US Sensor 
-		return rightUS.readUSDistance() <= TARGET_DIS; // return object is an obstacle if the reading less than target distance 
-	}
-	
-	
-	/**
-	 * Adjust robot position to grasp the foam block
-	 */
-	public void goToFoam(){
-		nav.turn(90);
-		if(frontUS.readUSDistance() > GRASP_DIS){
-			nav.moveForward();
+		(new Thread(){
+			public void run(){
+				nav.turn(30, Navigation.SACNNNG_SPEED);
+				nav.turn(-30, Navigation.SACNNNG_SPEED);
+				scanDone = true;
+			}
+		}).start();					// start a thread to let robot rotate
+		
+		double distance, currentDis;
+		
+		distance = leftUS.readUSDistance();			// set up the initial US distance 
+		
+		while(!this.scanDone){
+			currentDis = leftUS.readUSDistance();		//get the current US distance 
+			System.out.println("        dis:" +(int)currentDis );
+			if(currentDis < distance){
+				distance = currentDis;
+			}
 		}
-		nav.stopMoving();
+		this.scanDone = false;	
+		//nav.goBackward(DETECTION_OFFSET);//let robot move backward a bit to ensure robot to detect the same spot as front
+		
+		return distance < TARGET_DIS+DETECTION_OFFSET; // return object is an obstacle if the reading less than target distance 
 	}
+	
+
 	
 	
 	/**
