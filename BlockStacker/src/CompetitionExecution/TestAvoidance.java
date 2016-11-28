@@ -2,7 +2,7 @@ package CompetitionExecution;
 
 public class TestAvoidance extends Thread{
 	
-	private static final int bandCenter=10, bandwidth=2, UsDis_OffWall=15, EscapeAngle= -70;				
+	private static final int bandCenter=8, bandwidth=2, UsDis_OffWall=18;				
 	private static final int motorStraight = 130; // original motorStraight = 200 FILTER_OUT = 20
 	private Navigation nav;
 	private USPoller frontUS, rightUS;
@@ -19,19 +19,21 @@ public class TestAvoidance extends Thread{
 	
 	public void run() {
 		
+		nav.revert();		//since robot is too close to the object 
+		
 		double startAngle = nav.odometer.getAng();     // suppose robot is facing the obstacle when avoidance is called
 		System.out.println("         Ang: "+(int)startAngle);
 		
 		nav.rotateLeft();
 		frontUS.getRisingEdge(UsDis_OffWall, Searching.FILTER_OUT);
-		nav.turn(-30);
+		nav.turn(-45);
 		
 
-		while(Math.abs(nav.odometer.getAng() - ((startAngle + 180)%360)) >=3){
+		while(Math.abs(nav.odometer.getAng() - ((startAngle + 260)%360)) >=10){
 			distance = rightUS.readUSDistance();
 			double error =  Math.abs(distance - bandCenter);
 		
-			pControl = 20 + (int)(error/bandwidth)*13;  //calculate the error after obtaining the distance
+			pControl = 60 + (int)(error/bandwidth)*12;  //calculate the error after obtaining the distance
 			if(pControl > 120) pControl = 120;
 			
 			

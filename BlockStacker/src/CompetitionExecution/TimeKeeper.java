@@ -18,12 +18,13 @@ public class TimeKeeper extends Thread{
 	
 	public void run(){
 		while(true){
-			
 			if(Timer.timeLeft() < 60){
+				System.out.println("         T: "+Timer.timeLeft());
 				nav.interruptTraveling();
 				hunter.stopHunting();
 				BorderMonitor.stopChecking();
 				nav.goHome();	//fix later, should travel to the center of grid ***********
+				hunter.resumeHunting(BlockHunter.State.DRIVING);
 				return;
 			}
 		}

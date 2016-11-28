@@ -18,7 +18,7 @@ import lejos.utility.Delay;
 public class Searching extends Thread{
 	
 	final static int OBJECT_DIS=40;
-	final static int TARGET_NUM = 3, FILTER_OUT = 3; 
+	final static int TARGET_NUM = 3, FILTER_OUT = 7; 
 	private Navigation nav;
 	private static USPoller frontUS, rightUS;
 	private boolean searchingDone;
@@ -52,7 +52,7 @@ public class Searching extends Thread{
 			targetFallingDis = frontUS.getFallingEdge(OBJECT_DIS, FILTER_OUT); //record the falling edge distance
 			Sound.beep();
 			targetFallingAngle = nav.odometer.getAng();		//record the falling edge angle
-			targetRisingDis =  frontUS.getRisingEdge(OBJECT_DIS, FILTER_OUT); //record the Rising edge distance
+			targetRisingDis =  frontUS.getRisingEdge(OBJECT_DIS, 2); //record the Rising edge distance
 			targetRisingAngle = nav.odometer.getAng();		//record the falling edge angle
 			// take the average of falling and rising edge distance and angle to store
 			targets.add(new double[] {(targetFallingDis+targetRisingDis)/2, (targetFallingAngle+targetRisingAngle)/2});

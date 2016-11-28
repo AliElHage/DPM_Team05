@@ -859,7 +859,7 @@ public class Navigation extends Thread{
 	 */
 	public void revert(){
 		this.setSpeeds(-FAST, -FAST);
-		try { Thread.sleep(1500); } catch(Exception e){}
+		try { Thread.sleep(300); } catch(Exception e){}
 		this.stopMoving();
 	}
 	

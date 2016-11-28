@@ -7,7 +7,7 @@ import lejos.robotics.SampleProvider;
  * if a line has been crossed.
  */
 public class LightPoller extends Thread{
-	final static int SIGN_BLUE = 12, SING_WOOD =6; //Val[2] for RGB
+	final static int SIGN_BLUE = 12, SING_WOOD =6, LINE_SIGN = 40; //Val[2] for RGB
 	
 	private SampleProvider colorSensor;
 	private float[] colorData;	
@@ -72,7 +72,7 @@ public class LightPoller extends Thread{
 	 * @return if a line was detected, return T, if not, return F
 	 */
 	public boolean lineCrossed(){
-		if(colorReading < 30){
+		if(colorReading < LINE_SIGN){
 			return true;
 		}
 		else{

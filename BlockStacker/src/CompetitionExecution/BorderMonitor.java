@@ -42,7 +42,12 @@ public class BorderMonitor extends Thread{
 				 */
 				if(hunter.foamsCaptured()){		 
 					stopChecking();			
-					
+					nav.goHome();			//if robto has captured the foams then go back to starting corner
+					hunter.resumeHunting(BlockHunter.State.DRIVING);
+					return;
+				}else{
+					nav.goZoneDesignated();	//if robto hasnt captured the foams, then go back to zone designated
+					hunter.resumeHunting(BlockHunter.State.TRAVELING);
 				}
 				
 			}

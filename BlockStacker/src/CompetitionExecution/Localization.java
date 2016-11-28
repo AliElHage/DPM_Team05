@@ -18,7 +18,7 @@ public class Localization {
 	 */
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
 	private int FORWARD_SPEED = 200;
-	private int ROTATION_SPEED = 150;
+	private int ROTATION_SPEED = 150;		//150
 	private int LEFT_TURN_SPEED = 75;
 	private Odometer odo;
 	private Navigation navigator;
