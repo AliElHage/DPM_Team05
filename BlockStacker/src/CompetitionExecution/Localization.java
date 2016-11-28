@@ -52,15 +52,12 @@ public class Localization {
 	 * @param rightMotor right motor used to physically move robot
 	 * @param navigator same navigator to be used for moving robot in localize() and zeroRobot() methods
 	 */
-	//USPoller rightUS, USPoller leftUS, 
 	
 	public Localization(Odometer odo,  
 			USPoller frontUS,
 			LightPoller lightSensor, EV3LargeRegulatedMotor leftMotor, 
 			EV3LargeRegulatedMotor rightMotor, Navigation navigator) {
 		this.odo = odo;
-//		this.rightUS = rightUS;
-//		this.leftUS = leftUS;
 		this.frontUS = frontUS;
 		this.lightSensor = lightSensor;
 		this.leftMotor = leftMotor;
