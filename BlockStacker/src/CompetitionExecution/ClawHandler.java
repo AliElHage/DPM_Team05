@@ -3,27 +3,67 @@ package CompetitionExecution;
 import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
+/**
+ * Handles all claw movements including opening, closing, hoisting, and lowering
+ */
 public class ClawHandler {
 	
-	final static int clawSpeed = 100;					// speed of clawMotor
-	final static int pulleySpeed = 300;					// speed of pulleyMotor
-	final static double initialHeight =16.1;			// initial position of claws relative to the ground
-	final static double minDistanceFromGround = 2.2;	// minimum distance of claw relative to ground
-	final static double safeDropDistance = 9.8;			// amount to lower the claws to safely drop blocks on top of each other
-	final static double motorRadius = 0.7;				// distance between the middle of the motor and the peripheral holes
+	/**
+	 *  speed of clawMotor
+	 */
+	final static int clawSpeed = 100;
+	/**
+	 *  speed of pulleyMotor
+	 */
+	final static int pulleySpeed = 300;	
+	/**
+	 *  initial position of claws relative to the ground
+	 */
+	final static double initialHeight =16.1;	
+	/**
+	 *  minimum distance of claw relative to ground
+	 */
+	final static double minDistanceFromGround = 2.2;
+	/**
+	 *  amount to lower the claws to safely drop blocks on top of each other
+	 */
+	final static double safeDropDistance = 9.8;		
+	/**
+	 *  distance between the middle of the motor and the peripheral holes
+	 */
+	final static double motorRadius = 0.7;	
+	
 	final static int clawOpenAngle = 50, clawCloseAngle = -10, clawSemiOpenAngle = 25;
 	final static int clawAdjustingAngle = 10, graspOffsetDis = 2;
 	final static double offsetLift = 0.3; 
 	private Navigation nav;
-	private double angleToRelease, angleToLift, angleToSet;	// amount by which to move the claws from their initial position for pulley	
-	private EV3LargeRegulatedMotor pulleyMotor, clawMotor;	// all claw-related motors
-	private int counter;									// counts the amount of blocks stacked
+	
+	/**
+	 *  amount by which to move the claws from their initial position for pulley	
+	 */
+	private double angleToRelease, angleToLift, angleToSet;	
+	/**
+	 *  all claw-related motors
+	 */
+	private EV3LargeRegulatedMotor pulleyMotor, clawMotor;	
+	/**
+	 *  counts the amount of blocks stacked
+	 */
+	private int counter;	
+	/**
+	 *  counts the amount of foams captured
+	 */
 	private static int foamsCaptured;
 	
-	// NB FOR PULLEYSPEED: a negative speed is for lowering the claw; positive otherwise
-	// NB FOR CLAWSOPENANGLE: a negative angle is for grabbing; releasing otherwise
+	/** NB FOR PULLEYSPEED: a negative speed is for lowering the claw; positive otherwise */
+	/** NB FOR CLAWSOPENANGLE: a negative angle is for grabbing; releasing otherwise */
 	
-	/** Constructor. */
+	/**
+	 * constructor for Claw Handler that can open, lower, and raise the claw to catch a styrofoam block
+	 * @param clawMotor motor used to open and close claw
+	 * @param pulleyMotor motor used to hoist claw up and let it down
+	 * @param nav navigator used to adjust robot when grabbing a block
+	 */
 	public ClawHandler(EV3LargeRegulatedMotor clawMotor, EV3LargeRegulatedMotor pulleyMotor, Navigation nav){
 		this.clawMotor = clawMotor;
 		this.pulleyMotor = pulleyMotor;
@@ -41,35 +81,35 @@ public class ClawHandler {
 
 	
 	/**
-	 * open the claw when it is fully closed
+	 * Open the claw when it is fully closed.
 	 */
 	public void open(){
 		clawMotor.rotateTo((int)clawOpenAngle, false);
 	}
 	
 	/**
-	 * close the claw
+	 * Close the claw fully.
 	 */
 	public void close(){
 		clawMotor.rotateTo(clawCloseAngle, false);	
 	}
 	
 	/**
-	 * semi-open the claw for adjusting foam block position  
+	 * Semi-open the claw for adjusting foam block position.  
 	 */
 	public void semiOpen(){
 		clawMotor.rotateTo(clawSemiOpenAngle, false);	
 	}
 	
 	/**
-	 * release the pulley down all the way down to the bottom  
+	 * Release the pulley down all the way down to the bottom.  
 	 */
 	public void putDown(){
 		pulleyMotor.rotate((int)angleToRelease, false);
 	}
 	
 	/**
-	 * release the pulley down to the top of the foam block
+	 * Release the pulley down to the top of the foam block.
 	 */
 	public void putDownToObj(){
 		pulleyMotor.rotate((int)angleToSet, false);
@@ -77,7 +117,7 @@ public class ClawHandler {
 	
 	
 	/**
-	 * release the pulley down to bottom from the height of the foam block 
+	 * Release the pulley down to bottom from the height of the foam block. 
 	 */
 	public void putDownToBot(){
 		double angleToGrab = computePulleyTurnAngle(initialHeight - minDistanceFromGround - safeDropDistance);
@@ -85,59 +125,60 @@ public class ClawHandler {
 	}
 	
 	/**
-	 * pull pulley all the way up the top 
+	 * Pull pulley all the way up the top. 
 	 */
 	public void pullUp(){
 		pulleyMotor.rotate(-(int)angleToLift, false);
 	}
 	
-	/** Release the claw and grasp the foam and pull up the claw. 
-	 *	 Only call when the robot is at the appropriate distance.
-	 *  (block should be below the claws before this method is called).*/
+	/** 
+	 *  Release the claw and grasp the foam and pull up the claw. 
+	 *	Only call when the robot is at the appropriate distance.
+	 *  (block should be below the claws before this method is called).
+	 */
 	public void grasp(){
 		
-		// if the robot holds no block
+		/**
+		 * Accounts for case when there is no block in the claw, so it does
+		 * not need to be treated as gently as when there is already at least
+		 * one block in the claw. Puts claw down, adjusts robot, grabs block,
+		 * pulls claw up, and updates block count to 1.
+		 */
 		if(counter == 0){
 			
-			//release the claw down
 			this.putDown();
-			
-			// adjust the foam block position and grasp the block
 			this.fixAndGrasp();
-			
-			// lifts the block up
 			this.pullUp();
 			
-			// count block
 			counter++;
 			foamsCaptured++;
 			return;
 		}
 		
-		// gently place the held block on top of the other block
+		/**
+		 * Accounts for case when there is at least one block in the claw. Places
+		 * block down and releases before trying to grab and hoist stack of blocks.
+		 */		
 		this.putDownToObj();
-		
-		// release block from claws and lower the claw to ground block level
 		this.open();				///**************************
+		
 		this.putDownToBot();
-		
-		// grab ground block
 		this.fixAndGrasp();
-		
-		// lift blocks up
 		this.pullUp();
+		
 		counter++;
 		foamsCaptured++;
 	}
 	
-	/** Safely releases the tower on the ground.<br />
-	 *  [WARNING] only call when robot is in the safe zone. */
+	/**
+	 * Handles case where robot needs to drop final stack of styrofoam blocks in proper zone. 
+	 * Safely releases the tower on the ground, releases, and updates block count to 0. <br />
+	 * [WARNING] only call when robot is in the safe zone.
+	 */
 	public void releaseTower(){
-		
-		// lower tower to ground
+
 		this.putDown();
 		
-		// release tower
 		this.open();			//********************!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		this.counter = 0;
 		Sound.beep();
@@ -145,20 +186,28 @@ public class ClawHandler {
 	}
 	
 	
-	/** computes angle by which the pulleyMotor should rotate to lift the claws by distanceToRotate */
+	/** 
+	 * Computes angle by which the pulleyMotor should rotate to lift the claws by distanceToRotate. 
+	 */
 	public double computePulleyTurnAngle(double distanceToRotate){
 		
-		// compute the circumference described by a full turn of the motor
+		/** 
+		 * Computes angle by which the pulleyMotor should rotate to lift the claws by distanceToRotate. 
+		 */
 		double motorCircumference = 2 * Math.PI * motorRadius;
 		
-		// compute the angle required to turn in order to lift the claw by the desired distance
+		/** 
+		 * Compute the circumference described by a full turn of the motor.
+		 */
 		double angle = distanceToRotate / motorCircumference * 360;
 		
 		return angle;
 	}
 	
 	/**
-	 * fix position of foam block and grasp it 
+	 * Prevention for improper block positioning when robot tries to grasp styrofoam.
+	 * Attempts to grasp block, opens, adjusts robot to shift block, moves forward,
+	 * and grabs block.
 	 */
 	public void fixAndGrasp(){
 		this.close();
@@ -169,11 +218,11 @@ public class ClawHandler {
 		}
 		nav.goForward(graspOffsetDis);
 		this.close();
-	} 
+	}
 	
-	
-	/** Gets the amount of blocks held by the robot. */
-	public static int getfoamsCaptured(){
+	/** 
+	 * Gets the amount of blocks held by the robot. 
+	 */	public static int getfoamsCaptured(){
 		return foamsCaptured;
 	}
 	

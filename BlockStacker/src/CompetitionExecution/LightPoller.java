@@ -3,9 +3,8 @@ package CompetitionExecution;
 import lejos.robotics.SampleProvider;
 
 /**
- * checks color of block to see if it is the right one
- * @author courtneywright
- *
+ * Implemented in localization to check the red color value in order to determine 
+ * if a line has been crossed.
  */
 public class LightPoller extends Thread{
 	final static int SIGN_BLUE = 12, SING_WOOD =6; //Val[2] for RGB
@@ -14,11 +13,19 @@ public class LightPoller extends Thread{
 	private float[] colorData;	
 	private int colorReading;
 	
+	/**
+	 * Constructor for Light Poller to pass sample provider and data storage float array
+	 * @param colorSensor light sensor
+	 * @param colorData array used to store data received by the light sensor
+	 */
 	public LightPoller(SampleProvider colorSensor, float[] colorData) {
 		this.colorSensor = colorSensor;
 		this.colorData = colorData;
 	}
 	
+	/**
+	 * Used to continuously poll the color sensor and store data in colorData array.
+	 */
 	public void run(){
 		while(true){
 			colorSensor.fetchSample(colorData,0);
@@ -26,6 +33,11 @@ public class LightPoller extends Thread{
 		}
 	}
 	
+	/**
+	 * Checks if a block is blue or not by comparing the color data from the sensor
+	 * with the know value of blue for a block.
+	 * @return if block is identified to be blue in color, return T, if not, return F
+	 */
 	public boolean colorCheck() {
 		if (colorReading > SIGN_BLUE){			
 			return true;
@@ -34,6 +46,10 @@ public class LightPoller extends Thread{
 		}
 	}
 	
+	/**
+	 * Makes it clear to tester using robot which block has been detected by printing the 
+	 * type of block in the out file when a block is detected, for ease of testing.
+	 */
 	public void colorTesting(){
 		if(this.colorCheck()){
 			System.out.println("Blue Styrofoam  block");
@@ -42,14 +58,18 @@ public class LightPoller extends Thread{
 		}
 	}
 	
+	/**
+	 * Getter method for color reading
+	 * @return color reading
+	 */
 	public int readColor(){
 		return colorReading;
 	}
 	
 	/**
-	 * polls color sensor to get the data to see if it passes over a line.
-	 * returns a boolean true if it does cross a line.
-	 * @return boolean true if a line is deteced
+	 * Determines if a line has been crossed by comparing the color reading from the sensor
+	 * to know value of black line. 
+	 * @return if a line was detected, return T, if not, return F
 	 */
 	public boolean lineCrossed(){
 		if(colorReading < 30){

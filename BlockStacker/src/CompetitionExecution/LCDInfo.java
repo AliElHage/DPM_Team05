@@ -5,6 +5,10 @@ import lejos.hardware.lcd.TextLCD;
 import lejos.utility.Timer;
 import lejos.utility.TimerListener;
 
+/**
+ * Gets values from each of the passed variables and writes them to the robot's display
+ * to make it easier for human understanding of what the robot is doing.
+ */
 public class LCDInfo implements TimerListener{
 	public static final int LCD_REFRESH = 100;
 	private Odometer odo;
@@ -12,9 +16,18 @@ public class LCDInfo implements TimerListener{
 	private Timer lcdTimer;
 	private TextLCD LCD = LocalEV3.get().getTextLCD();
 	
-	// arrays for displaying data
+	/**
+	 * Array for displaying data
+	 */
 	private double [] pos;
 	
+	/**
+	 * Constructor for LCDInfo to get values from each of the variables passed.
+	 * @param odo odometer used to get values to write to screen
+	 * @param frontUS front US sensor used to get values to write to screen
+	 * @param leftUS left US sensor used to get values to write to screen
+	 * @param rightUS right US sensor used to get values to write to screen
+	 */
 	public LCDInfo(Odometer odo, USPoller frontUS, USPoller leftUS, USPoller rightUS) {
 		this.odo = odo;
 		this.lcdTimer = new Timer(LCD_REFRESH, this);
@@ -22,17 +35,28 @@ public class LCDInfo implements TimerListener{
 		this.leftUS = leftUS;
 		this.rightUS = rightUS;
 		
-		// initialise the arrays for displaying data
+		/**
+		 * Initializes the arrays for displaying data
+		 */
 		pos = new double [3];
 		
-		// start the timer
+		/** 
+		 * Starts the timer used to decide when to refresh
+		 */
 		lcdTimer.start();
 	}
 	
+	/**
+	 * Starts LCD display
+	 */
 	public void initLCD(){
 		lcdTimer.start();
 	}
 	
+	/**
+	 * Used to write odometer and US readings to screen by placing each variable at a proper
+	 * location on the screen by refreshing to get new values.
+	 */
 	public void timedOut() { 
 		odo.getPosition(pos);
 		LCD.clear();
