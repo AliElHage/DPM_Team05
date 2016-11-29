@@ -117,7 +117,7 @@ public class Main {
 		/**
 		 * Init timer 
 		 */
-		Timer.startTiming(280);
+		Timer.startTiming(275);
 		TimeKeeper timeKeeper  = new TimeKeeper(nav, blockHunter);
 		timeKeeper.start();
 
@@ -157,6 +157,7 @@ public class Main {
 					nav.resumeTraveling();	//recall TravelTo with dest set before
 				}else{
 					// if target is a wooden block, then avoid it 
+					blockHunter.markBlockFront();
 					avoidance = new Avoidance(nav, frontUS, rightUS); 
 					avoidance.start(); 
 					while(!avoidance.handled());
@@ -229,7 +230,7 @@ public class Main {
 				nav.resumeTraveling();		
 			}
 		}
-		nav.goIntoHome();
+		nav.goIntoHome();	//go into starting corner 
 		
 	}
 	

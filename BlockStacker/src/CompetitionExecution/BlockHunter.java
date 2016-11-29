@@ -179,7 +179,7 @@ public class BlockHunter{
 	/**
 	 * Mark the block in the front in the middle of traveling 
 	 */
-	private void markBlockFront(){
+	public void markBlockFront(){
 		double currentAng = nav.odometer.getAng();		
 		double blockX = nav.odometer.getX() + TARGET_DIS*Math.cos(Math.toRadians(currentAng));
 		double blockY = nav.odometer.getY() + TARGET_DIS*Math.sin(Math.toRadians(currentAng));
