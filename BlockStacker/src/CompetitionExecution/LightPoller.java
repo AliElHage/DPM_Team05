@@ -7,11 +7,12 @@ import lejos.robotics.SampleProvider;
  * if a line has been crossed.
  */
 public class LightPoller extends Thread{
-	final static int SIGN_BLUE = 12, SING_WOOD =6, LINE_SIGN = 40; //Val[2] for RGB
+	final static int SIGN_BLUE = 12, SING_WOOD =6, LINE_SIGN = 35; //Val[2] for RGB
 	
 	private SampleProvider colorSensor;
 	private float[] colorData;	
 	private int colorReading;
+	private boolean isDone; 
 	
 	/**
 	 * Constructor for Light Poller to pass sample provider and data storage float array
@@ -21,17 +22,21 @@ public class LightPoller extends Thread{
 	public LightPoller(SampleProvider colorSensor, float[] colorData) {
 		this.colorSensor = colorSensor;
 		this.colorData = colorData;
+		this.isDone = false;
 	}
 	
 	/**
 	 * Used to continuously poll the color sensor and store data in colorData array.
 	 */
 	public void run(){
-		while(true){
+		while(!isDone){
 			colorSensor.fetchSample(colorData,0);
 			colorReading = (int)(colorData[0] *100.0); 
 		}
 	}
+	
+	
+	
 	
 	/**
 	 * Checks if a block is blue or not by comparing the color data from the sensor
@@ -56,6 +61,13 @@ public class LightPoller extends Thread{
 		}else{
 			System.out.println("Block");
 		}
+	}
+	
+	/**
+	 * To stop the light Poller thread
+	 */
+	public void stopRunning(){
+		this.isDone = true;
 	}
 	
 	/**

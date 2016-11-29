@@ -792,21 +792,39 @@ public class Navigation extends Thread{
 	
 	
 	/**
-	 * Drive robot to the first grid of the designated zone and face to the second grid 
+	 * Drive robot to the first grid of the designated zone
 	 */
 	public void goZoneDesignated(){
 		this.setDest(zoneDesignated.get(0));
 		new Thread(this).start();
-		//******************************check if it need to turn to the second grid in the zone to ensure robot inside the zone
 	}
 	
 	/**
-	 * Drive robot to the starting corner 
+	 * Drive robot to the corner grid near the starting corner 
 	 */
 	public void goHome(){
 		this.setDest(Main.startCorner.getX(), Main.startCorner.getY());
 		new Thread(this).start();
-		//******************************add more codes to drive robot to the grid!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	}
+	
+	public void goIntoHome(){
+		switch(Main.startCorner.getId()){
+		case 1:
+			travelTo(-15, -15);
+			break;
+		
+		case 2:
+			travelTo(315, -15);
+			break;
+			
+		case 3:
+			travelTo(315, 315);
+			break;
+		
+		case 4:
+			travelTo(-15, 315);
+			break;
+		}
 	}
 	
 	/**

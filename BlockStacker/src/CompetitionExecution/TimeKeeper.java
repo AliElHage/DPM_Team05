@@ -23,7 +23,7 @@ public class TimeKeeper extends Thread{
 				nav.interruptTraveling();
 				hunter.stopHunting();
 				BorderMonitor.stopChecking();
-				nav.goHome();	//fix later, should travel to the center of grid ***********
+				nav.goHome();	
 				hunter.resumeHunting(BlockHunter.State.DRIVING);
 				return;
 			}
