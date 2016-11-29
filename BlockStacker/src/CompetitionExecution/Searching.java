@@ -3,7 +3,6 @@ package CompetitionExecution;
 
 import java.util.ArrayList;
 
-import lejos.hardware.Sound;
 import lejos.utility.Delay;
 
 
@@ -18,7 +17,7 @@ import lejos.utility.Delay;
 public class Searching extends Thread{
 	
 	final static int OBJECT_DIS=40;
-	final static int TARGET_NUM = 3, FILTER_OUT = 7; 
+	final static int TARGET_NUM = 2, FILTER_OUT = 7; 
 	private Navigation nav;
 	private static USPoller frontUS, rightUS;
 	private boolean searchingDone;
@@ -50,13 +49,11 @@ public class Searching extends Thread{
 		
 		while(targets.size()<TARGET_NUM){			//store 3 target for each sweeping search 
 			targetFallingDis = frontUS.getFallingEdge(OBJECT_DIS, FILTER_OUT); //record the falling edge distance
-			Sound.beep();
 			targetFallingAngle = nav.odometer.getAng();		//record the falling edge angle
 			targetRisingDis =  frontUS.getRisingEdge(OBJECT_DIS, 2); //record the Rising edge distance
 			targetRisingAngle = nav.odometer.getAng();		//record the falling edge angle
 			// take the average of falling and rising edge distance and angle to store
 			targets.add(new double[] {(targetFallingDis+targetRisingDis)/2, (targetFallingAngle+targetRisingAngle)/2});
-			Sound.beepSequence();
 			
 /*			Delay.msDelay(500);      //ensure robot to record the position of the center of target after a value returned 
 			targetFallingAngle = nav.odometer.getAng();		//record the angle;

@@ -1,6 +1,5 @@
 package CompetitionExecution;
 
-import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
 /**
@@ -181,7 +180,6 @@ public class ClawHandler {
 		
 		this.open();			//********************!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		this.counter = 0;
-		Sound.beep();
 		this.pullUp();
 	}
 	

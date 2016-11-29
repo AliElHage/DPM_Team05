@@ -2,7 +2,6 @@ package CompetitionExecution;
 
 import java.util.ArrayList;
 
-import lejos.hardware.Sound;
 import lejos.utility.Delay;
 
 
@@ -18,7 +17,7 @@ public class BlockHunter{
 	private ClawHandler claw; 
 	private boolean scanDone, isHunting;
 	private ArrayList<double[]> destinations;				//store the target coordinates after sweeping search
-	private State state;
+	
 	
 
 	public BlockHunter(Navigation nav, USPoller frontUS, USPoller leftUS, USPoller rightUS, ClawHandler claw){
@@ -37,7 +36,7 @@ public class BlockHunter{
 		Avoidance avoidance =  null;
 				
 		while(isHunting){
-			switch (this.state) {
+			switch (state) {
 	
 			case INIT:
 				Searching searching = new Searching(nav, frontUS, rightUS);  //create a searching instance
@@ -49,14 +48,12 @@ public class BlockHunter{
 				
 				if (!this.isObstacle()) {
 					// if target is a styrofoam, then grasp it
-					Sound.beep();
 					claw.grasp(); 
 					destinations.remove(0);	   //remove the first target from the collection after detection									
 					state = State.SEARCHING;
 				} else {
 					//// if target is a wooden block, then mark it on the map and travel to next target
 					nav.map.markBlocked(destinations.get(0)[0], destinations.get(0)[1]);
-					Sound.beepSequence();
 					destinations.remove(0);	   //remove the first target from the collection after detection									
 					state = State.SEARCHING;
 				}
@@ -79,14 +76,12 @@ public class BlockHunter{
 					
 					if (!this.isObstacle()) {
 						// if target is a styrofoam, then grasp it
-						Sound.beep();
 						claw.grasp(); 
 						destinations.remove(0);	   //remove the first target from the collection after detection									
 						state = State.SEARCHING;
 					}else {
 						//// if target is a wooden block, then mark it on the map and travel to next target
 						nav.map.markBlocked(destinations.get(0)[0], destinations.get(0)[1]);
-						Sound.twoBeeps();
 						destinations.remove(0);	   //remove the first target from the collection after detection									
 						state = State.SEARCHING;
 						}
@@ -99,7 +94,6 @@ public class BlockHunter{
 					this.approachTo(); // approach to the object to be ready for object classification
 					if (!this.isObstacle()) {
 						// if target is a styrofoam, then grasp it
-						Sound.beep();
 						claw.grasp(); 								
 						nav.resumeTravelingByPath();	//recall TravelTo with dest set before
 					}else{
@@ -256,16 +250,6 @@ public class BlockHunter{
 		return distance < TARGET_DIS+DETECTION_OFFSET; // return object is an obstacle if the reading less than target distance 
 	}
 	
-
-	
-	
-	/**
-	 * Set robot current state
-	 * @param state
-	 */
-	public void setState(State state){
-		this.state = state;
-	}
 
 	
 

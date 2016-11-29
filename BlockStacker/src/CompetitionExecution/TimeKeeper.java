@@ -18,13 +18,13 @@ public class TimeKeeper extends Thread{
 	
 	public void run(){
 		while(true){
-			if(Timer.timeLeft() < 60){
-				System.out.println("         T: "+Timer.timeLeft());
-				nav.interruptTraveling();
+			if(Timer.timeLeft() <= 60){
+				/*nav.interruptTraveling();					//codes could have worked if blockHunter works
 				hunter.stopHunting();
-				BorderMonitor.stopChecking();
-				nav.goHome();	
-				hunter.resumeHunting(BlockHunter.State.DRIVING);
+				BorderMonitor.stopChecking();*/
+				Main.timeToGoHome();
+				/*nav.goHome();	
+				hunter.resumeHunting(BlockHunter.State.DRIVING);*/
 				return;
 			}
 		}

@@ -2,6 +2,7 @@ package CompetitionExecution;
 
 import java.util.ArrayList;
 
+import CompetitionExecution.BlockHunter.State;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
@@ -20,6 +21,10 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
  */
 public class Main {
 	
+	enum State {INIT, SEARCHING, TRAVELING, AVOIDING, DRIVING}		//define three states of robot when it is hunting
+	
+	final static double TARGET_DIS=6.2, OBJECT_DIS=40, GRASP_DIS= 6.7, VISION_DIS= 25;
+	final static double  DETECTION_OFFSET= 12.5;
 	private final static int TEAM_NUM = 5;
 	private static final EV3LargeRegulatedMotor leftMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
 	private static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
@@ -34,8 +39,7 @@ public class Main {
 	public static int BTN, BSC, CTN, CSC, LRZx, LRZy, URZx, URZy, LGZx, LGZy, UGZx, UGZy;
 	public static boolean isBuilder;
 	public static StartCorner startCorner;
-	private boolean scanDone, isHunting;
-	private ArrayList<double[]> destinations;				//store the target coordinates after sweeping search
+	private static boolean goHome = false;
 
 	
 	public static void main(String[] args) {
@@ -43,9 +47,9 @@ public class Main {
 		 * Instantiation for Parameter Interpretation
 		 */
 		ParameterInterpretation parInt = new ParameterInterpretation();
-		//parInt.interpret();
+		parInt.interpret();
 		
-		Main.BTN = 2;
+		/*Main.BTN = 2;
 		Main.BSC = 2;
 		Main.CTN = 5;
 		Main.CSC = 3;
@@ -56,7 +60,7 @@ public class Main {
 		Main.LGZx = 2;
 		Main.LGZy = 2;
 		Main.UGZx = 4;
-		Main.UGZy = 3;
+		Main.UGZy = 3;*/
 		
 		/**
 		 * Assign team role and  Set up startCorner
@@ -99,8 +103,6 @@ public class Main {
 		
 		lightSensor.start();
 		frontUS.start();
-		rightUS.start();
-		leftUS.start();
 		
 		
 		Odometer odo = new Odometer(leftMotor, rightMotor, 30, true);
@@ -115,159 +117,42 @@ public class Main {
 		/**
 		 * Init timer 
 		 */
-	/*	Timer.startTiming(260);
+		Timer.startTiming(280);
 		TimeKeeper timeKeeper  = new TimeKeeper(nav, blockHunter);
 		timeKeeper.start();
 
-		*//**
+		/**
 		 * Localize robot
-		 *//*
+		 */
 		lcd.initLCD();
 		loc.localize();
 		loc.zeroRobot();
+		Sound.beepSequence();
+		lightSensor.stopRunning();
+		
+		
+		//Set up odometer according to the startCorner received from Wifi
 		odo.setPosition(new double [] {startCorner.getX(),startCorner.getY(),startCorner.getAngle()},
 				new boolean []{true, true, true});
-		Sound.beepSequence();
+		
+		rightUS.start();
+		leftUS.start();
 		
 		
-		*//**
-		 * Travel to zone designated
-		 * Red zone - garbage collector
-		 * Green zone - tower builder
-		 */
-		/*nav.goZoneDesignated();
-		new Thread(blockHunter).start();
-		
-		//Delay.msDelay(200);			//wait robot to set up
-		
-		
-		/**
-		 * Init borderMonitor
-		 
-		/*BorderMonitor borderMonitor = new BorderMonitor(nav, blockHunter);
-		borderMonitor.start();*/
-		
-		
-		
-		/*********************************************************
-		 * END COMPETITION EXECUTION CODE
-		 ********************************************************/
-		
-		
-		
-		
-		
-	/*	//TEST startCorner
-		startCorner = StartCorner.lookupCorner(3);*/
-		
-		/**
-		 * Set up odometer according to the startCorner received from Wifi
-		 */
-	
-		/*lcd.initLCD();
-		lcd.initLCD();
-		loc.localize();
-		loc.zeroRobot();*/
-		
-	
-		
-
-		FieldMap map = nav.getFieldMap();
-	
-		
-
-		//TEST SEARCHING		
-		/*searching.start();
-		ArrayList<double[]> targets = searching.trackingTargets();
-		searching.stopSearching();
-		for(double[] target: targets){
-			nav.turnToDest(target[0], target[1]);
-			blockHunter.approachTo();
-			if(blockHunter.isObstacle()){
-				Sound.beepSequence();
-			}else{
-				Sound.beep();
-				claw.grasp();
-			}
-		}*/
-		
-
-		
-		
-		
-		//testing stacking foams
-		/*claw.grasp();
-		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		claw.grasp();
-		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		claw.grasp();
-		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		claw.releaseTower();
-*/
-
-
-		
-		
-		
-		//TEST OBJECT DETECTION 
-		/*while(true){
-
-			while (Button.waitForAnyPress() != Button.ID_RIGHT);
-			blockHunter.approachTo();
-			if(blockHunter.isObstacle()){
-				Sound.beepSequence();
-			}else{
-				Sound.beep();
-				claw.grasp();
-			}
-
-		}*/
-	
-
-		
-		//TEST AVOIDANCE
-		/*TestAvoidance avoi = new TestAvoidance(nav, frontUS, rightUS);
-		blockHunter.approachTo();
-		avoi.start();*/
-		
-		//TEST AVOIDANCE in NAVIGATION 
-		/*estAvoidance avoidance = null;
-		nav.setDest(map.getGrid(4, 2));
-		new Thread(nav).start();
-		while(true){
-			if(frontUS.readUSDistance() < 25){
-				nav.interruptTraveling();
-				blockHunter.approachTo(); // approach to the object to be ready for object classification
-				if (!blockHunter.isObstacle()) {
-					// if target is a styrofoam, then grasp it
-					Sound.beep();
-					claw.grasp(); 								
-					nav.resumeTraveling();	//recall TravelTo with dest set before
-				}else{
-					// if target is a wooden block, then avoid it 
-					avoidance = new TestAvoidance(nav, frontUS, rightUS); 
-					avoidance.start(); 
-					while(!avoidance.handled());
-					nav.resumeTraveling();		
-				}
-			}
-		}*/
-		
-		
-		//TEST threads 
-	/*	Timer.startTiming(150);
-		TimeKeeper timeKeeper  = new TimeKeeper(nav, blockHunter);
-		timeKeeper.start();
-		
+		//Start moving 
 		Avoidance avoidance = null;
-		nav.goZoneDesignated();
+		//First drive robot to the designated zone
+		nav.goZoneDesignated();			
+		//Checking front while traveling 
 		while(true){
-			if(frontUS.readUSDistance() < 25){
+			if(nav.checkDone()){
+				break;
+			}
+			if(frontUS.readUSDistance() < VISION_DIS){
 				nav.interruptTraveling();
 				blockHunter.approachTo(); // approach to the object to be ready for object classification
 				if (!blockHunter.isObstacle()) {
 					// if target is a styrofoam, then grasp it
-					Sound.beep();
 					claw.grasp(); 								
 					nav.resumeTraveling();	//recall TravelTo with dest set before
 				}else{
@@ -278,21 +163,78 @@ public class Main {
 					nav.resumeTraveling();		
 				}
 			}
-		}*/
+		}
 		
+		//once robot get to the designated zone, check if it has captured enough foam, if not start searching
+		while(!blockHunter.foamsCaptured()){
+			if(goHome){			// if game is close to end, break the while loop
+				break;
+			}
+			searching = new Searching(nav, frontUS, rightUS);  //create a searching instance
+			searching.start();	//start a thread keep checking if robot has rotated 360 and drive to next spot  if so
+			ArrayList<double[]> targets = searching.trackingTargets();
+			searching.stopSearching(); 		// stop the searching thread if targets have been found			
+			for(double[] target: targets){
+				nav.turnToDest(target[0], target[1]);
+				blockHunter.approachTo();
+				if(blockHunter.isObstacle()){
+					nav.map.markBlocked(target[0], target[1]);
+				}else{
+					claw.grasp();
+				}
+			}
+		}
 		
+		if(!goHome){	// do the following only if robot has enough time
+			nav.goZoneDesignated();
+			//Checking front while traveling
+			while(true){
+				if(nav.checkDone()){
+					break;
+				}
+				if(frontUS.readUSDistance() < VISION_DIS){
+					nav.interruptTraveling();
+					blockHunter.approachTo(); // approach to the object to be ready for object classification
+					if (!blockHunter.isObstacle()) {
+						// if target is a styrofoam, then grasp it
+						claw.grasp(); 								
+						nav.resumeTraveling();	//recall TravelTo with dest set before
+					}else{
+						// if target is a wooden block, then avoid it 
+						avoidance = new Avoidance(nav, frontUS, rightUS); 
+						avoidance.start(); 
+						while(!avoidance.handled());
+						nav.resumeTraveling();		
+					}
+				}
+			}
+			nav.turnToZoneDesignated();
+			claw.releaseTower();  //release the blocks at designated zone 
+		}
 		
-		/*nav.setDest(map.getGrid(4, 2));
-		new Thread(nav).start();*/
-		nav.goZoneDesignated();
-		blockHunter.startHunting(BlockHunter.State.TRAVELING);
+		nav.goHome();			// go back to starting corner
+		//Checking front while traveling, avoid any objects
+		while(true){
+			if(nav.checkDone()){
+				break;
+			}
+			if(frontUS.readUSDistance() < VISION_DIS){
+				nav.interruptTraveling();
+				blockHunter.approachTo(); // approach to the object to be ready for object classification
+			
+				// run avoidance for any object  
+				avoidance = new Avoidance(nav, frontUS, rightUS); 
+				avoidance.start(); 
+				while(!avoidance.handled());
+				nav.resumeTraveling();		
+			}
+		}
+		nav.goIntoHome();
 		
-		
-		
-		
-		/*while (Button.waitForAnyPress() != Button.ID_ESCAPE);
-		System.exit(0);*/
-		
+	}
+	
+	public static void timeToGoHome(){
+		goHome = true;
 	}
 	
 }

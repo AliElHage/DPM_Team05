@@ -1,6 +1,5 @@
 package CompetitionExecution;
 
-import lejos.hardware.Sound;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.robotics.SampleProvider;
@@ -112,7 +111,6 @@ public class Localization {
 //				if(frontUS.readUSDistance() > threshDist) {
 				if(frontUS.getRisingEdge(threshDist, 10) > threshDist) {
 					Delay.msDelay(250);
-//					Sound.beep();
 					navigator.stopMoving();
 //					leftMotor.stop();
 //					rightMotor.stop();
@@ -151,7 +149,6 @@ public class Localization {
 //				if(frontUS.readUSDistance() > threshDist){
 				if(frontUS.getRisingEdge(threshDist, 10) > threshDist) {
 					Delay.msDelay(250);
-//					Sound.beep();
 					navigator.stopMoving();
 //					rightMotor.stop();
 //					leftMotor.stop();
@@ -276,7 +273,7 @@ public class Localization {
 	 * moves robot to this location to manually set odometer to 0-0-0.
 	 */
 	public void zeroRobot() {
-		LCD.clear();
+		/*LCD.clear();*/
 		/**
 		 * turns robot to 45 degrees, which can happen because the angle is already oriented
 		 */
@@ -313,7 +310,6 @@ public class Localization {
 		 */
 		while (lineNumber < 4) {
 			if (lightSensor.lineCrossed()) {
-//				Sound.beep();
 				angles[lineNumber] = odo.getAng();
 				lineNumber +=1;
 				try {

@@ -5,7 +5,6 @@ import java.awt.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import lejos.hardware.Sound;
 import lejos.hardware.lcd.LCD;
 /*
  * File: Navigation.java
@@ -143,7 +142,6 @@ public class Navigation extends Thread{
 			}
 			rightPathLength = rightPath.size();
 		}
-		Sound.beep();
 		if(!isBlocked) 
 			return path;
 		
@@ -172,7 +170,6 @@ public class Navigation extends Thread{
 			return leftPath;
 		}
 		if(prevGridY<gridBlockedY) {
-			Sound.beep();
 			if(prevGridX > gridBlockedX)
 				leftPath.add(map.getGrid(gridBlockedX, gridBlockedY -1));
 			for(int i=0; i<3;i++) {
@@ -808,13 +805,21 @@ public class Navigation extends Thread{
 	}
 	
 	/**
+	 * adjust robot heading to the scecond grid of zone
+	 */
+	public void turnToZoneDesignated(){
+		double[] dest = FieldMap.convertGridToPoint(zoneDesignated.get(1).getGridX(), zoneDesignated.get(1).getGridY());
+		this.turnToDest(dest[0],dest[1]);
+	}
+	
+	/**
 	 * Drive robot to the corner grid near the starting corner 
 	 */
 	public void goHome(){
-		this.setDest(Main.startCorner.getX(), Main.startCorner.getY());
+		this.setDest(map.getGrid((double)Main.startCorner.getX(), (double)Main.startCorner.getY()));
 		new Thread(this).start();
 	}
-	
+
 	public void goIntoHome(){
 		switch(Main.startCorner.getId()){
 		case 1:
