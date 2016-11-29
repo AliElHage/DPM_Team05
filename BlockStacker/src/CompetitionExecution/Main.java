@@ -43,10 +43,10 @@ public class Main extends Thread{
 		ParameterInterpretation parInt = new ParameterInterpretation();
 		//parInt.interpret();
 		
-	/*	Main.BTN = 5;
+		Main.BTN = 2;
 		Main.BSC = 2;
-		Main.CTN = 6;
-		Main.CSC = 1;
+		Main.CTN = 5;
+		Main.CSC = 3;
 		Main.LRZx = 5;
 		Main.LRZy = 1;
 		Main.URZx = 7;
@@ -56,16 +56,16 @@ public class Main extends Thread{
 		Main.UGZx = 4;
 		Main.UGZy = 3;
 		
-		*//**
+		/**
 		 * Assign team role and  Set up startCorner
-		 *//*
+		 */
 		if(BTN==TEAM_NUM){
 			isBuilder = true;
 			startCorner = StartCorner.lookupCorner(BSC);
 		}else{
 			isBuilder = false;
 			startCorner = StartCorner.lookupCorner(CSC);
-		}*/
+		}
 		
 		/**
 		 * US declarations
@@ -113,22 +113,22 @@ public class Main extends Thread{
 		/**
 		 * Init timer 
 		 */
-		/*Timer.startTiming(260);
+	/*	Timer.startTiming(260);
 		TimeKeeper timeKeeper  = new TimeKeeper(nav, blockHunter);
-		timeKeeper.start();*/
+		timeKeeper.start();
 
-		/**
+		*//**
 		 * Localize robot
-		 */
-		/*lcd.initLCD();
+		 *//*
+		lcd.initLCD();
 		loc.localize();
 		loc.zeroRobot();
 		odo.setPosition(new double [] {startCorner.getX(),startCorner.getY(),startCorner.getAngle()},
 				new boolean []{true, true, true});
-		Sound.beepSequence();*/
+		Sound.beepSequence();
 		
 		
-		/**
+		*//**
 		 * Travel to zone designated
 		 * Red zone - garbage collector
 		 * Green zone - tower builder
@@ -136,13 +136,13 @@ public class Main extends Thread{
 		/*nav.goZoneDesignated();
 		new Thread(blockHunter).start();
 		
-		Delay.msDelay(200);			//wait robot to set up
+		//Delay.msDelay(200);			//wait robot to set up
 		
 		
-		*//**
+		/**
 		 * Init borderMonitor
-		 *//*
-		BorderMonitor borderMonitor = new BorderMonitor(nav, blockHunter);
+		 
+		/*BorderMonitor borderMonitor = new BorderMonitor(nav, blockHunter);
 		borderMonitor.start();*/
 		
 		
@@ -301,6 +301,7 @@ public class Main extends Thread{
 				Sound.beepSequence();
 			}else{
 				Sound.beep();
+				claw.grasp();
 			}
 
 		}*/
@@ -327,8 +328,8 @@ public class Main extends Thread{
 		
 		
 		//TEST AVOIDANCE in NAVIGATION 
-		TestAvoidance avoidance = null;
-		nav.setDest(150, 60);
+		/*estAvoidance avoidance = null;
+		nav.setDest(map.getGrid(4, 2));
 		new Thread(nav).start();
 		while(true){
 			if(frontUS.readUSDistance() < 25){
@@ -344,12 +345,45 @@ public class Main extends Thread{
 					avoidance = new TestAvoidance(nav, frontUS, rightUS); 
 					avoidance.start(); 
 					while(!avoidance.handled());
-					nav.resumeTraveling();
+					nav.resumeTraveling();		
 				}
 			}
-		}
-
-
+		}*/
+		
+		
+		//TEST threads 
+		/*Timer.startTiming(150);
+		TimeKeeper timeKeeper  = new TimeKeeper(nav, blockHunter);
+		timeKeeper.start();
+		
+		TestAvoidance avoidance = null;
+		nav.goZoneDesignated();
+		while(true){
+			if(frontUS.readUSDistance() < 25){
+				nav.interruptTraveling();
+				blockHunter.approachTo(); // approach to the object to be ready for object classification
+				if (!blockHunter.isObstacle()) {
+					// if target is a styrofoam, then grasp it
+					Sound.beep();
+					claw.grasp(); 								
+					nav.resumeTraveling();	//recall TravelTo with dest set before
+				}else{
+					// if target is a wooden block, then avoid it 
+					avoidance = new TestAvoidance(nav, frontUS, rightUS); 
+					avoidance.start(); 
+					while(!avoidance.handled());
+					nav.resumeTraveling();		
+				}
+			}
+		}*/
+		
+		
+		
+		nav.setDest(map.getGrid(4, 2));
+		new Thread(nav).start();
+		//nav.goZoneDesignated();
+		Sound.beepSequenceUp();
+		new Thread(blockHunter).start();
 		
 		
 		/*while (Button.waitForAnyPress() != Button.ID_ESCAPE);

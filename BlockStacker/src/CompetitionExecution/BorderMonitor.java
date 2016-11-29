@@ -41,7 +41,8 @@ public class BorderMonitor extends Thread{
 				 * If robot has captured foam blocks, call stopChecking.
 				 */
 				if(hunter.foamsCaptured()){		 
-					stopChecking();			
+					stopChecking();	
+					nav.interruptTraveling();
 					nav.goHome();			//if robto has captured the foams then go back to starting corner
 					hunter.resumeHunting(BlockHunter.State.DRIVING);
 					return;

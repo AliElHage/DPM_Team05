@@ -33,11 +33,12 @@ public class Navigation extends Thread{
 	public Odometer odometer;
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
 	private double desiredX, desiredY;
+	private int xGrid, yGrid;
 	private int destGridX, destGridY, currentGridX, currentGridY;
 	private boolean interrupted, isTraveling;
 	public FieldMap map; 
 	public ArrayList<Grid> zoneDesignated;
-	final static double DEG_ERR = 1.0, CM_ERR = 1.0;
+	final static double DEG_ERR = 2.0, CM_ERR = 2.0;
 
 	public Navigation(Odometer odo) {
 		this.odometer = odo;
@@ -53,13 +54,13 @@ public class Navigation extends Thread{
 		this.rightMotor.setAcceleration(ACCELERATION);
 		
 		//set up the map conditions
-		/*if(Main.isBuilder){			//if role is builder
+		if(Main.isBuilder){			//if role is builder
 			this.zoneDesignated = map.getZone(Main.LGZx, Main.LGZy, Main.UGZx, Main.UGZy);
 			map.zoneBlocked(Main.LRZx, Main.LRZy, Main.URZx, Main.URZy);	// block the red zone area
 		}else{						// if role is garbage collector
 			this.zoneDesignated = map.getZone(Main.LRZx, Main.LRZy, Main.URZx, Main.URZy);
 			map.zoneBlocked(Main.LGZx, Main.LGZy, Main.UGZx, Main.UGZy);	// block the green zone area 
-		}*/
+		}
 	}
 	
 	public void run(){
@@ -544,8 +545,6 @@ public class Navigation extends Thread{
 		double distance;
 		
 		this.isTraveling = true;
-		desiredX = x;
-		desiredY = y;
 		
 		this.turnToDest(x, y);
 		//Delay.msDelay(500);
@@ -566,8 +565,6 @@ public class Navigation extends Thread{
 		double minAng;
 		
 		this.isTraveling = true;
-		desiredX = x;
-		desiredY = y;
 		
 		while (Math.abs(x - odometer.getX()) > CM_ERR || Math.abs(y - odometer.getY()) > CM_ERR) {
 			if(!interrupted){
@@ -776,7 +773,7 @@ public class Navigation extends Thread{
 	/**
 	 *  To resume last traveling without stalling the current thread 
 	 */
-	public void resumeTraveling(){
+	public synchronized void resumeTraveling(){
 		this.interrupted = false;
 		(new Thread(){
 			public void run(){
@@ -788,7 +785,7 @@ public class Navigation extends Thread{
 	/**
 	 *  To resume last traveling by path without stalling the current thread 
 	 */
-	public void resumeTravelingByPath(){
+	public synchronized void resumeTravelingByPath(){
 		this.interrupted = false;
 		(new Thread(this)).start();	//start a thread to drive robot to destination
 	}
@@ -807,7 +804,7 @@ public class Navigation extends Thread{
 	 * Drive robot to the starting corner 
 	 */
 	public void goHome(){
-		this.setDest(Main.startCorner.getX(), Main.startCorner.getX());
+		this.setDest(Main.startCorner.getX(), Main.startCorner.getY());
 		new Thread(this).start();
 		//******************************add more codes to drive robot to the grid!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	}

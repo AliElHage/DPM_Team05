@@ -54,7 +54,7 @@ public class BlockHunter extends Thread{
 	
 	
 	public void run(){
-		TestAvoidance avoidance =  null;
+		Avoidance avoidance =  null;
 				
 		while(isHunting){
 			switch (this.state) {
@@ -125,7 +125,7 @@ public class BlockHunter extends Thread{
 					}else{
 						// if target is a wooden block, then avoid it 
 						markBlockFront();
-						avoidance = new TestAvoidance(nav, frontUS, rightUS); 
+						avoidance = new Avoidance(nav, frontUS, rightUS); 
 						avoidance.start(); 		
 						state = State.AVOIDING;		//set to avoiding mode
 					}	
@@ -144,7 +144,7 @@ public class BlockHunter extends Thread{
 				if(checkFront()){				//when detect something in the front
 					nav.interruptTraveling();				
 					this.approachTo(); // approach to the object to be ready for avodiacne 
-					avoidance = new TestAvoidance(nav, frontUS, rightUS); 
+					avoidance = new Avoidance(nav, frontUS, rightUS); 
 					avoidance.start(); 		
 					state = State.AVOIDING;		//set to avoiding mode		
 				}else if(!nav.checkDone()){
