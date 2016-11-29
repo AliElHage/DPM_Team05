@@ -1,11 +1,12 @@
 package CompetitionExecution;
 
 import java.util.ArrayList;
+
 import lejos.hardware.Sound;
 import lejos.utility.Delay;
 
 
-public class BlockHunter extends Thread{
+public class BlockHunter{
 	
 	enum State {INIT, SEARCHING, TRAVELING, AVOIDING, DRIVING}		//define three states of robot when it is hunting
 	
@@ -19,28 +20,8 @@ public class BlockHunter extends Thread{
 	private ArrayList<double[]> destinations;				//store the target coordinates after sweeping search
 	private State state;
 	
-	/**
-	 * Constructor with setting up initial state
-	 * @param nav
-	 * @param frontUS
-	 * @param leftUS
-	 * @param rightUS
-	 * @param claw
-	 */
+
 	public BlockHunter(Navigation nav, USPoller frontUS, USPoller leftUS, USPoller rightUS, ClawHandler claw){
-		this(nav, frontUS, leftUS, rightUS, claw, State.INIT);
-	}
-	
-	/**
-	 * Constructor without setting up initial state, so thread will start with default INIT state
-	 * @param nav
-	 * @param frontUS
-	 * @param leftUS
-	 * @param rightUS
-	 * @param claw
-	 * @param state
-	 */
-	public BlockHunter(Navigation nav, USPoller frontUS, USPoller leftUS, USPoller rightUS, ClawHandler claw, State state){
 		this.nav = nav;
 		this.frontUS = frontUS;
 		this.leftUS = leftUS;
@@ -49,11 +30,10 @@ public class BlockHunter extends Thread{
 		this.scanDone = false;
 		this.isHunting = true;					// a flag to control the on or off of state machine
 		this.destinations = new ArrayList<>();
-		this.state = state;
 	}
 	
 	
-	public void run(){
+	public void startHunting (State state){
 		Avoidance avoidance =  null;
 				
 		while(isHunting){
@@ -141,7 +121,7 @@ public class BlockHunter extends Thread{
 				break;
 			
 			case DRIVING:			//Driving state will avoid anything encouter 
-				if(checkFront()){				//when detect something in the front
+				if(this.checkFront()){				//when detect something in the front
 					nav.interruptTraveling();				
 					this.approachTo(); // approach to the object to be ready for avodiacne 
 					avoidance = new Avoidance(nav, frontUS, rightUS); 
@@ -150,6 +130,7 @@ public class BlockHunter extends Thread{
 				}else if(!nav.checkDone()){
 					nav.resumeTraveling(); 
 				}else{
+					nav.goIntoHome();			//once robot gets to the last grid, drive to starting corner
 					return;
 				}
 				
@@ -224,6 +205,7 @@ public class BlockHunter extends Thread{
 	 */
 	public void stopHunting(){
 		this.isHunting = false;
+		Delay.msDelay(100); 			//wait the stateMachine to exit
 	}
 	
 	/**
@@ -231,8 +213,8 @@ public class BlockHunter extends Thread{
 	 * @param state
 	 */
 	public void resumeHunting(State state){
-		this.setState(state);
-		new Thread(this).start();
+		this.isHunting = true;
+		this.startHunting(state);
 	}
 	
 	

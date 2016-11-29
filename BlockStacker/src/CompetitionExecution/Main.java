@@ -2,7 +2,6 @@ package CompetitionExecution;
 
 import java.util.ArrayList;
 
-import CompetitionExecution.BlockHunter.State;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
@@ -19,7 +18,9 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
  * @author courtneywright
  *
  */
-public class Main extends Thread{
+public class Main {
+	
+	enum State {INIT, SEARCHING, TRAVELING, AVOIDING, DRIVING}		//define three states of robot when it is hunting
 	
 	private final static int TEAM_NUM = 5;
 	private static final EV3LargeRegulatedMotor leftMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
@@ -35,6 +36,14 @@ public class Main extends Thread{
 	public static int BTN, BSC, CTN, CSC, LRZx, LRZy, URZx, URZy, LGZx, LGZy, UGZx, UGZy;
 	public static boolean isBuilder;
 	public static StartCorner startCorner;
+	private boolean scanDone, isHunting;
+	private ArrayList<double[]> destinations;				//store the target coordinates after sweeping search
+	private State state;
+	private static Navigation nav;
+	private static ClawHandler claw;
+	private static USPoller frontUS, leftUS, rightUS;
+	final static double TARGET_DIS=6.2, OBJECT_DIS=40, GRASP_DIS= 6.7, VISION_DIS= 25;
+	final static double  DETECTION_OFFSET= 12.5;
 	
 	public static void main(String[] args) {
 		/**
@@ -91,9 +100,9 @@ public class Main extends Thread{
 		/**
 		 * Class instantiations
 		 */
-		USPoller rightUS = new USPoller(usValueRight, usDataRight);
-		USPoller leftUS = new USPoller(usValueLeft, usDataLeft);
-		USPoller frontUS = new USPoller(usValueFront, usDataFront);
+		rightUS = new USPoller(usValueRight, usDataRight);
+		leftUS = new USPoller(usValueLeft, usDataLeft);
+		frontUS = new USPoller(usValueFront, usDataFront);
 		
 		lightSensor.start();
 		frontUS.start();
@@ -108,7 +117,7 @@ public class Main extends Thread{
 		Localization loc = new Localization(odo,frontUS, lightSensor, leftMotor, rightMotor, nav);
 		ClawHandler claw = new ClawHandler(clawMotor, pulleyMotor, nav);
 		Searching searching = new Searching(nav, frontUS, rightUS);
-		BlockHunter blockHunter = new BlockHunter(nav, frontUS, leftUS, rightUS, claw, BlockHunter.State.TRAVELING);
+		BlockHunter blockHunter = new BlockHunter(nav, frontUS, leftUS, rightUS, claw);
 		
 		/**
 		 * Init timer 
@@ -169,47 +178,9 @@ public class Main extends Thread{
 		
 	
 		
-		
-		//TEST travelTo()
-		/*nav.travelTo(0, 30);
-		nav.travelTo(30, 30);
-		nav.travelTo(60, 60);
-		
-		
-		//TEST TRAVELING
-		 /************************************************************
-		 *	consider 0,0 as localization point
-		 *In each case robot will have the following waypoint on 4*4 grid
-		 *		travels to 45,75 (Grid 1,2)
-		 *		then return to 15,15 (Grid 0,0)
-		 ************************************************************/
 
 		FieldMap map = nav.getFieldMap();
-	/*	odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});  // reset odometer if skipping localization 
-
-		//Case 1: test up/right/down/left convention
-		//START ROBOT AT BOTTOM LEFT FACING RIGHT
-		
-		//make sure always traveling in right angles
-		nav.travelByPath(new Grid(0,2));
-		Sound.beep();
-		nav.travelByPath(new Grid(1,2));
-		Sound.beep();
-		nav.travelByPath(new Grid(1,0));
-		Sound.beep();
-		nav.travelByPath(new Grid(0,0));
-*/		
-		//Case 2: test upRight/DownLeft convention
-		//START ROBOT AT BOTTOM LEFT FACING RIGHT
-		/*nav.travelByPath(new Grid(1, 2));
-		nav.travelByPath(new Grid(0, 0));
-		
-		//case 3: test upLeft/Downright convention
-		//START ROBOT AT BOTTOM RIGHT FACING RIGHT
-		odo.setPosition(new double [] {60.0, 0.0,0.0},new boolean []{true, true, true});
-		nav.travelByPath(map.getGrid(1, 2));
-		nav.travelByPath(map.getGrid(0, 0));
-		*/
+	
 		
 
 		//TEST SEARCHING		
@@ -228,48 +199,7 @@ public class Main extends Thread{
 		}*/
 		
 
-		//TEST NAVIGATION
-		/*map.zoneBlocked(1, 1, 2, 2);
 		
-		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});
-		nav.setDest(map.getGrid(2, 2));
-		new Thread(nav).start();
-		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		nav.setDest(map.getGrid(2, 0));
-		new Thread(nav).start();
-		*/
-		
-		//TEST CALCPATH
-//		case 1 Right(Lower) Path
-//		map.getGrid(1,2).setBlocked();
-//		map.getGrid(1, 1).setBlocked();
-//		nav.travelByPath(map.getGrid(2, 2));
-//		
-//		//case 2 Left(Upper) Path 	
-//		map.getGrid(1, 1).setBlocked();
-//		nav.travelByPath(map.getGrid(2, 2));
-		
-		//TEST CLAW
-		//testing basic functions claw
-	/*	claw.open();
-		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		claw.close();
-		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		claw.open();
-		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		claw.putDown();
-		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		claw.pullUp();
-		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		claw.putDownToObj();
-		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		claw.putDownToBot();
-		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		claw.open();
-		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		claw.close();
-		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		claw.pullUp();*/
 		
 		
 		//testing stacking foams
@@ -282,13 +212,7 @@ public class Main extends Thread{
 		claw.releaseTower();
 */
 
-		
-		//TEST FOAM POSITION FIX WITH CLAW 
-/*		claw.open();
-		claw.putDown();
-		while (Button.waitForAnyPress() != Button.ID_RIGHT);
-		claw.fixAndGrasp();
-		claw.pullUp();*/
+
 		
 		
 		
@@ -305,27 +229,13 @@ public class Main extends Thread{
 			}
 
 		}*/
-		
-		//TEST CORRECTION
-		/*correction.start();
-		odo.setPosition(new double [] {0.0, 0.0,0.0},new boolean []{true, true, true});
-		nav.travelTo(90, 0);
-		nav.travelTo(0, 0);*/
-		
-		
-		//TEST wifi instruction
-		/*FieldMap map = nav.getFieldMap();
-		nav.goZoneDesignated();				//robot should go to the green zone 
-		nav.travelByPath(map.getGrid(0, 2));	//robot should avoid red zone 
-		 */		
+	
 
 		
 		//TEST AVOIDANCE
-		
 		/*TestAvoidance avoi = new TestAvoidance(nav, frontUS, rightUS);
 		blockHunter.approachTo();
 		avoi.start();*/
-		
 		
 		//TEST AVOIDANCE in NAVIGATION 
 		/*estAvoidance avoidance = null;
@@ -352,11 +262,11 @@ public class Main extends Thread{
 		
 		
 		//TEST threads 
-		/*Timer.startTiming(150);
+	/*	Timer.startTiming(150);
 		TimeKeeper timeKeeper  = new TimeKeeper(nav, blockHunter);
 		timeKeeper.start();
 		
-		TestAvoidance avoidance = null;
+		Avoidance avoidance = null;
 		nav.goZoneDesignated();
 		while(true){
 			if(frontUS.readUSDistance() < 25){
@@ -369,7 +279,7 @@ public class Main extends Thread{
 					nav.resumeTraveling();	//recall TravelTo with dest set before
 				}else{
 					// if target is a wooden block, then avoid it 
-					avoidance = new TestAvoidance(nav, frontUS, rightUS); 
+					avoidance = new Avoidance(nav, frontUS, rightUS); 
 					avoidance.start(); 
 					while(!avoidance.handled());
 					nav.resumeTraveling();		
@@ -379,15 +289,17 @@ public class Main extends Thread{
 		
 		
 		
-		nav.setDest(map.getGrid(4, 2));
-		new Thread(nav).start();
-		//nav.goZoneDesignated();
-		Sound.beepSequenceUp();
-		new Thread(blockHunter).start();
+		/*nav.setDest(map.getGrid(4, 2));
+		new Thread(nav).start();*/
+		nav.goZoneDesignated();
+		blockHunter.startHunting(BlockHunter.State.TRAVELING);
+		
+		
 		
 		
 		/*while (Button.waitForAnyPress() != Button.ID_ESCAPE);
 		System.exit(0);*/
 		
 	}
+	
 }
