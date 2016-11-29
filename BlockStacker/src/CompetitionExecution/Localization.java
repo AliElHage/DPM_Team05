@@ -17,8 +17,8 @@ public class Localization {
 	 * general variables used for both ultrasonic and light sensor parts of localization
 	 */
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
-	private int FORWARD_SPEED = 200;
-	private int ROTATION_SPEED = 150;		//150
+	private int FORWARD_SPEED = 300;
+	private int ROTATION_SPEED = 250;		//150
 	private int LEFT_TURN_SPEED = 75;
 	private Odometer odo;
 	private Navigation navigator;
@@ -29,16 +29,15 @@ public class Localization {
 	 */
 	private USPoller rightUS, leftUS, frontUS;
 	private int threshDist = 20;
-	private int wallThresh = 40;
-	private int correctionAngRight = 15;
-	private int correctionAngLeft = 15;
+	private int wallThresh = 35;
+	private boolean rising;
 	
 	/**
 	 * light sensor localization specific variables
 	 */
 	private static LightPoller lightSensor;
-	private int extraDist = 4;
 	private double distance = 12.5;
+	private double correctionAng = 90;
 	double x, y, angleX, angleY;
 	
 	/**
@@ -71,12 +70,16 @@ public class Localization {
 	 */
 	public void localize() {
 		
-double angleA, angleB, angleAvg;
+		double angleA, angleB, angleAvg;
 		
 		leftMotor.setSpeed(ROTATION_SPEED);
 		rightMotor.setSpeed(ROTATION_SPEED);
 		
-		if (frontUS.readUSDistance() <= threshDist) {
+		if (frontUS.readUSDistance() <= wallThresh) {
+			
+			rising = true;
+			
+//			navigator.turn(180, 200);
 			
 			/**
 			 * The robot should look for the "rising edges:" the points where it no 
@@ -86,12 +89,12 @@ double angleA, angleB, angleAvg;
 			rightMotor.setSpeed(ROTATION_SPEED);
 			leftMotor.setSpeed(ROTATION_SPEED);
 			
-			/**
-			 * Stops checking for distance from wall while the robot turns 45 degrees 
-			 * to ensure that the sensor does not stop rotation too early
-			 */
-			leftMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 45), true);
-			rightMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 45), false);
+//			/**
+//			 * Stops checking for distance from wall while the robot turns 45 degrees 
+//			 * to ensure that the sensor does not stop rotation too early
+//			 */
+//			leftMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 45), true);
+//			rightMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 45), false);
 			
 			/**
 			 * Starts normal turning clockwise
@@ -106,31 +109,37 @@ double angleA, angleB, angleAvg;
 			 * angular positioning
 			 */
 			while (true){
-				if(frontUS.readUSDistance() > threshDist){
-					Sound.beep();
+//				if(frontUS.readUSDistance() > threshDist) {
+				if(frontUS.getRisingEdge(threshDist, 10) > threshDist) {
+					Delay.msDelay(250);
+//					Sound.beep();
 					navigator.stopMoving();
 //					leftMotor.stop();
 //					rightMotor.stop();
-					angleB = odo.getAng();
+					angleA = odo.getAng();
 					break;
 				}
 			}
 			
-			navigator.setSpeeds(ROTATION_SPEED, ROTATION_SPEED);
+			leftMotor.setSpeed(ROTATION_SPEED);
+			rightMotor.setSpeed(ROTATION_SPEED);
 			
 			/**
 			 * Turn toward the wall a bit to ensure the sensor detects the wall
 			 * properly and does not accidentally detect it is farther than the
 			 * threshold
 			 */
-			leftMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 45), true);
-			rightMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 45), false);
+//			navigator.turn(20);
+//			leftMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 45), true);
+//			rightMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 45), false);
 			
 			/**
 			 * Starts normal turning counterclockwise
 			 */
 			leftMotor.backward();
 			rightMotor.forward();
+			
+			Delay.msDelay(1250);
 			
 			/**
 			 * Continuously checks for a distance farther than the threshold
@@ -139,12 +148,14 @@ double angleA, angleB, angleAvg;
 			 * angular positioning
 			 */			
 			while (true){
-				if(frontUS.readUSDistance() > threshDist){
-					Sound.beep();
+//				if(frontUS.readUSDistance() > threshDist){
+				if(frontUS.getRisingEdge(threshDist, 10) > threshDist) {
+					Delay.msDelay(250);
+//					Sound.beep();
 					navigator.stopMoving();
 //					rightMotor.stop();
 //					leftMotor.stop();
-					angleA = odo.getAng();
+					angleB = odo.getAng();
 					break;
 				}
 			}
@@ -158,21 +169,27 @@ double angleA, angleB, angleAvg;
 			else{
 				angleAvg =  45 - (angleA + angleB)/2;
 			}
+			
 			double ang = angleA+angleAvg;
 			LCD.drawString("Pos: " + ang , 0, 6);
 			
-			navigator.setSpeeds(ROTATION_SPEED, ROTATION_SPEED);
+			leftMotor.setSpeed(ROTATION_SPEED);
+			rightMotor.setSpeed(ROTATION_SPEED);
 			
-			odo.setPosition(new double [] {0.0, 0.0, angleA + angleAvg}, new boolean []{true, true, true});
+			odo.setPosition(new double [] {0.0, 0.0, angleA + angleAvg + correctionAng}, new boolean []{true, true, true});
 			
 			/**
 			 * Turns robot to face along the X-axis
 			 */
-			navigator.turnTo(180, true);
+			navigator.turnTo(0, true);
 			
 		
 		} else {
 		
+			rising = false;
+			
+			leftMotor.setSpeed(ROTATION_SPEED);
+			rightMotor.setSpeed(ROTATION_SPEED);
 			/**
 			 * Starts rising edge procedure by turning robot
 			 */
@@ -187,7 +204,7 @@ double angleA, angleB, angleAvg;
 			 */
 			while (true) {
 				if(frontUS.readUSDistance() <= threshDist){
-					Sound.beep();
+//					Sound.beep();
 					navigator.stopMoving();
 //					leftMotor.stop();
 //					rightMotor.stop();
@@ -196,20 +213,23 @@ double angleA, angleB, angleAvg;
 				}
 			}
 			
-			navigator.setSpeeds(ROTATION_SPEED, ROTATION_SPEED);
+			leftMotor.setSpeed(ROTATION_SPEED);
+			rightMotor.setSpeed(ROTATION_SPEED);
 			
-			/**
-			 * Stops checking for distance from wall while the robot turns 90 degrees 
-			 * to ensure that the sensor does not stop rotation too early
-			 */
-			leftMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 90), true);
-			rightMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 90), false);
+//			/**
+//			 * Stops checking for distance from wall while the robot turns 90 degrees 
+//			 * to ensure that the sensor does not stop rotation too early
+//			 */
+//			leftMotor.rotate(-convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 90), true);
+//			rightMotor.rotate(convertAngle(Main.WHEEL_RADIUS, Main.WIDTH, 90), false);
 	
 			/**
 			 * Starts normal turning clockwise
 			 */
 			rightMotor.forward();
 			leftMotor.backward();
+			
+			Delay.msDelay(1250);
 			
 			/**
 			 * Continuously checks for a wall while turning, if one is found,stop the 
@@ -218,7 +238,7 @@ double angleA, angleB, angleAvg;
 			 */
 			while (true){
 				if(frontUS.readUSDistance() <= threshDist){
-					Sound.beep();
+//					Sound.beep();
 					navigator.stopMoving();
 //					leftMotor.stop();
 //					rightMotor.stop();
@@ -237,14 +257,15 @@ double angleA, angleB, angleAvg;
 				angleAvg =  45 - (angleA + angleB)/2;
 			}
 			
-			navigator.setSpeeds(ROTATION_SPEED, ROTATION_SPEED);
+			leftMotor.setSpeed(ROTATION_SPEED);
+			rightMotor.setSpeed(ROTATION_SPEED);
 			
 			odo.setPosition(new double [] {0.0, 0.0, angleB + angleAvg}, new boolean []{true, true, true});
 			
 			/**
 			 * Turns robot to face along the X-axis
 			 */
-			navigator.turnTo(0, true);
+//			navigator.turnTo(0, true);
 		}
 		
 	}
@@ -259,7 +280,8 @@ double angleA, angleB, angleAvg;
 		/**
 		 * turns robot to 45 degrees, which can happen because the angle is already oriented
 		 */
-		navigator.turnTo(45, true);
+		navigator.turnTo(45, true, ROTATION_SPEED);
+//		navigator.turnTo(45, true);
 		
 		/**
 		 * moves robot forward 15cm to properly place sensor to check lines
@@ -291,7 +313,7 @@ double angleA, angleB, angleAvg;
 		 */
 		while (lineNumber < 4) {
 			if (lightSensor.lineCrossed()) {
-				Sound.beep();
+//				Sound.beep();
 				angles[lineNumber] = odo.getAng();
 				lineNumber +=1;
 				try {
@@ -320,13 +342,13 @@ double angleA, angleB, angleAvg;
 		 * with a negative, so the formula was changed to exclude the negative
 		 */
 		x = (-distance)*Math.cos(Math.toRadians(angleY));
-		
-		if (leftTurnToZero) {
-			y = (distance)*Math.cos(Math.toRadians(angleX));
-		} else {
-			y = (-distance)*Math.cos(Math.toRadians(angleX));
-		}
-		
+		y = (distance)*Math.cos(Math.toRadians(angleX));
+//		if (rising) {
+//			y = (-distance)*Math.cos(Math.toRadians(angleX));
+//		}
+//		else {
+//			y = (distance)*Math.cos(Math.toRadians(angleX));
+//		}
 		
 		/**
 		 * turns to theta=0 to make it easier to set odometer position
@@ -337,7 +359,8 @@ double angleA, angleB, angleAvg;
 		 */
 		odo.setPosition(new double [] {x, y, odo.getAng()}, new boolean []{true, true, true});
 		
-		navigator.setSpeeds(ROTATION_SPEED, ROTATION_SPEED);
+		leftMotor.setSpeed(ROTATION_SPEED);
+		rightMotor.setSpeed(ROTATION_SPEED);
 		
 		/**
 		 * navigation method to move the robot to its final position based on calculation
@@ -357,57 +380,6 @@ double angleA, angleB, angleAvg;
 		 * navigation method to turn the robot to its final position based on calculation
 		 */
 		navigator.turnTo(0, true);
-		
-		/**
-		 * based on if our team is builder or collector, BSC or CSC will hold our starting corner, respectively
-		 * set x,y,theta based on starting corner
-		 */
-		if (Main.BTN == 5) {
-			if (Main.BSC == 1) {
-				/**
-				 * set odometer to confirm that it is now at 0,0,0
-				 */
-				odo.setPosition(new double [] {0, 0, odo.getAng()}, new boolean [] {true, true, true});
-			} else if (Main.BSC == 2) {
-				/**
-				 * set odometer to confirm that it is now at 10,0,90
-				 */
-				odo.setPosition(new double [] {10, 0, odo.getAng()+90}, new boolean [] {true, true, true});
-			} else if (Main.BSC == 3) {
-				/**
-				 * set odometer to confirm that it is now at 10,10,180
-				 */
-				odo.setPosition(new double [] {10, 10, odo.getAng()+180}, new boolean [] {true, true, true});
-			} else if (Main.BSC == 4) {
-				/**
-				 * set odometer to confirm that it is now at 0,10,270
-				 */
-				odo.setPosition(new double [] {0, 10, odo.getAng()+270}, new boolean [] {true, true, true});
-			}
-		} else if (Main.CTN == 5) {
-			if (Main.CSC == 1) {
-				/**
-				 * set odometer to confirm that it is now at 0,0,0
-				 */
-				odo.setPosition(new double [] {0, 0, odo.getAng()}, new boolean [] {true, true, true});
-			} else if (Main.CSC == 2) {
-				/**
-				 * set odometer to confirm that it is now at 10,0,90
-				 */
-				odo.setPosition(new double [] {10, 0, odo.getAng()+90}, new boolean [] {true, true, true});
-			} else if (Main.CSC == 3) {
-				/**
-				 * set odometer to confirm that it is now at 10,10,180
-				 */
-				odo.setPosition(new double [] {10, 10, odo.getAng()+180}, new boolean [] {true, true, true});
-			} else if (Main.CSC == 4) {
-				/**
-				 * set odometer to confirm that it is now at 0,10,270
-				 */
-				odo.setPosition(new double [] {0, 10, odo.getAng()+270}, new boolean [] {true, true, true});
-			}
-		}
-		
 		
 	}
 	
