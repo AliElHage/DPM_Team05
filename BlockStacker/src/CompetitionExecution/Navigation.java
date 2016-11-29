@@ -21,9 +21,7 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.utility.Delay;
 
 /**
- * moves robot
- * @author courtneywright
- *
+ * Moves robot in any direction desired including forward, backward and turning
  */
 public class Navigation extends Thread{
 	enum Direction {LEFT,RIGHT,UP,DOWN,UPLEFT,UPRIGHT,DOWNLEFT,DOWNRIGHT}
@@ -40,6 +38,10 @@ public class Navigation extends Thread{
 	public ArrayList<Grid> zoneDesignated;
 	final static double DEG_ERR = 2.0, CM_ERR = 2.0;
 
+	/**
+	 * Constructor for Navigation class to set up Object that can move robot anywhere desired.
+	 * @param odo odometer so that navigation knows where the robot is at all times
+	 */
 	public Navigation(Odometer odo) {
 		this.odometer = odo;
 		this.interrupted = false;
@@ -49,17 +51,23 @@ public class Navigation extends Thread{
 		this.leftMotor = motors[0];
 		this.rightMotor = motors[1];
 		
-		// set acceleration
+		/**
+		 * Set acceleration
+		 */
 		this.leftMotor.setAcceleration(ACCELERATION);
 		this.rightMotor.setAcceleration(ACCELERATION);
 		
-		//set up the map conditions
-		if(Main.isBuilder){			//if role is builder
+		/**
+		 * Set up the map conditions depending on if the robot is designated to be the 
+		 * builder or collector robot. Builder not allowed in red zone and stacker not
+		 * allowed in red zone.
+		 */
+		if(Main.isBuilder){			
 			this.zoneDesignated = map.getZone(Main.LGZx, Main.LGZy, Main.UGZx, Main.UGZy);
-			map.zoneBlocked(Main.LRZx, Main.LRZy, Main.URZx, Main.URZy);	// block the red zone area
-		}else{						// if role is garbage collector
+			map.zoneBlocked(Main.LRZx, Main.LRZy, Main.URZx, Main.URZy);	
+		}else{						
 			this.zoneDesignated = map.getZone(Main.LRZx, Main.LRZy, Main.URZx, Main.URZy);
-			map.zoneBlocked(Main.LGZx, Main.LGZy, Main.UGZx, Main.UGZy);	// block the green zone area 
+			map.zoneBlocked(Main.LGZx, Main.LGZy, Main.UGZx, Main.UGZy);	
 		}
 	}
 	
