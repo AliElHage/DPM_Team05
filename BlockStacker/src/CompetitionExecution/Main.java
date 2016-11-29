@@ -20,8 +20,6 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
  */
 public class Main {
 	
-	enum State {INIT, SEARCHING, TRAVELING, AVOIDING, DRIVING}		//define three states of robot when it is hunting
-	
 	private final static int TEAM_NUM = 5;
 	private static final EV3LargeRegulatedMotor leftMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
 	private static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
@@ -38,12 +36,7 @@ public class Main {
 	public static StartCorner startCorner;
 	private boolean scanDone, isHunting;
 	private ArrayList<double[]> destinations;				//store the target coordinates after sweeping search
-	private State state;
-	private static Navigation nav;
-	private static ClawHandler claw;
-	private static USPoller frontUS, leftUS, rightUS;
-	final static double TARGET_DIS=6.2, OBJECT_DIS=40, GRASP_DIS= 6.7, VISION_DIS= 25;
-	final static double  DETECTION_OFFSET= 12.5;
+
 	
 	public static void main(String[] args) {
 		/**
@@ -100,9 +93,9 @@ public class Main {
 		/**
 		 * Class instantiations
 		 */
-		rightUS = new USPoller(usValueRight, usDataRight);
-		leftUS = new USPoller(usValueLeft, usDataLeft);
-		frontUS = new USPoller(usValueFront, usDataFront);
+		USPoller rightUS = new USPoller(usValueRight, usDataRight);
+		USPoller leftUS = new USPoller(usValueLeft, usDataLeft);
+		USPoller frontUS = new USPoller(usValueFront, usDataFront);
 		
 		lightSensor.start();
 		frontUS.start();

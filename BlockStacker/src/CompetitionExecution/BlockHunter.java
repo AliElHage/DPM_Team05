@@ -38,7 +38,7 @@ public class BlockHunter{
 				
 		while(isHunting){
 			switch (this.state) {
-			
+	
 			case INIT:
 				Searching searching = new Searching(nav, frontUS, rightUS);  //create a searching instance
 				searching.start();	//start a thread keep checking if robot has rotated 360 and drive to next spot  if so
