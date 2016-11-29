@@ -49,18 +49,6 @@ public class Main {
 		ParameterInterpretation parInt = new ParameterInterpretation();
 		parInt.interpret();
 		
-		/*Main.BTN = 2;
-		Main.BSC = 2;
-		Main.CTN = 5;
-		Main.CSC = 3;
-		Main.LRZx = 5;
-		Main.LRZy = 1;
-		Main.URZx = 7;
-		Main.URZy = 3;
-		Main.LGZx = 2;
-		Main.LGZy = 2;
-		Main.UGZx = 4;
-		Main.UGZy = 3;*/
 		
 		/**
 		 * Assign team role and  Set up startCorner
